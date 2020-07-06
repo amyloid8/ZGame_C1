@@ -336,5 +336,5 @@ dependencies:
     - tensorflow-estimator==1.15.1
     - termcolor==1.1.0
     - websocket-client==0.57.0
-prefix: C:\Users\jo26236\.conda\envs\zgame
+prefix: C:\Users\xxxxxx\.conda\envs\zgame
 
