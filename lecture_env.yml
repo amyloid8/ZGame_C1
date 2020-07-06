@@ -1,4 +1,4 @@
-name: py37gym
+name: lectures
 channels:
   - conda-forge
   - defaults
@@ -357,5 +357,5 @@ dependencies:
     - tensorflow-estimator==2.1.0
     - termcolor==1.1.0
     - websocket-client==0.57.0
-prefix: C:\Users\jo26236\.conda\envs\py37gym
+prefix: C:\Users\xxxxxx\.conda\envs\py37gym
 
