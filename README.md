@@ -1,4 +1,4 @@
-# Z-Game
+# Z-Game Team Chris 1
 
 BWSI-SG with AI Zombie Game.
 
