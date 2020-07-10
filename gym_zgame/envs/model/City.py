@@ -263,6 +263,8 @@ class City:
     def _update_global_states(self):
         self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
         self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
+        if self.fear < 0:
+            self.fear = 0
         if self.resources < 0:
             self.resources = 0
             self._destroy_upkeep_deployments()
