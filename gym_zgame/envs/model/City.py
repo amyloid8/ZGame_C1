@@ -260,6 +260,14 @@ class City:
                 elif dep is DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY:
                     fear_cost_per_turn += 1
                     resource_cost_per_turn += 1
+
+                elif dep is DEPLOYMENTS.TESTING_CENTER_OPT:
+                    fear_cost_per_turn += 1
+                    resource_cost_per_turn += 2
+                elif dep is DEPLOYMENTS.TESTING_CENTER_MAN:
+                    fear_cost_per_turn += 3
+                    resource_cost_per_turn += 2
+
         self.delta_fear = fear_cost_per_turn
         self.delta_resources = resource_cost_per_turn
 
