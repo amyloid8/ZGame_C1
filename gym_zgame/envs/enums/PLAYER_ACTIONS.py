@@ -30,6 +30,9 @@ class DEPLOYMENTS(IntEnum):
     SOCIAL_DISTANCING_SIGNS = 23
     SOCIAL_DISTANCING_CELEBRITY = 24
 
+    TESTING_CENTER_OPT = 25
+    TESTING_CENTER_MAN = 26
+
     @staticmethod
     def print():
         for deployment in DEPLOYMENTS:
@@ -90,7 +93,13 @@ class DEPLOYMENTS(IntEnum):
         elif deployment.upper() == 'SOCIAL_DISTANCING_SIGNS':
             return DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS.value
         elif deployment.upper() == 'SOCIAL_DISTANCING_CELEBRITY':
-            return DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY.value       
+            return DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY.value
+
+        elif deployment.upper() == 'TESTING_CENTER_OPT':
+            return DEPLOYMENTS.TESTING_CENTER_OPT.value
+        elif deployment.upper() == 'TESTING_CENTER_MAN':
+            return DEPLOYMENTS.TESTING_CENTER_MAN.value
+
         else:
             warnings.warn('Tried to convert string ({}) to DEPLOYMENTS enum and failed; returned NONE'.format(deployment))
             return DEPLOYMENTS.NONE.value
@@ -147,6 +156,12 @@ class DEPLOYMENTS(IntEnum):
             return DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS.name
         elif deployment.upper() == 'SOCIAL_DISTANCING_CELEBRITY':
             return DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY.name
+
+        elif deployment.upper() == 'TESTING_CENTER_OPT':
+            return DEPLOYMENTS.TESTING_CENTER_OPT.name
+        elif deployment.upper() == 'TESTING_CENTER_MAN':
+            return DEPLOYMENTS.TESTING_CENTER_MAN.name
+
         else:
             warnings.warn('Tried to convert string ({}) to DEPLOYMENTS enum and failed; returned NONE'.format(deployment))
             return DEPLOYMENTS.NONE.name
