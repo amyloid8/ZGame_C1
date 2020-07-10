@@ -4,6 +4,7 @@ import gym
 import gym_zgame
 from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
+from GUI import *
 
 
 class ZGame:
@@ -35,6 +36,14 @@ class ZGame:
 
     def _cleanup(self):
         self.env.close()
+
+    def run_gui(self):
+        root = Tk()
+        root.title("ZGAME")
+        #root.geometry("270x250")
+        app = GUI(self, root)
+        root.mainloop()
+        print("HELLO WORLD")
 
     def run(self):
         print('Starting new game with human play!')
