@@ -2,6 +2,8 @@ import os
 import argparse
 from ZGameMachinePlay import ZGame
 
+os.environ['KMP_DUPLICATE_LIB_OK']='True' # YOU GET OMP: ERROR #15 without this line. Delete it if you do not need this.
+
 parser = argparse.ArgumentParser(description='CLI Argument Parser for Machine Playback.')
 parser.add_argument('--model', help='Input file name for learned model.', default='rl-agent')
 parser.add_argument('--outfile', help='Data logging file name.', default='data_log.json')
