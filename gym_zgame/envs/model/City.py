@@ -890,9 +890,6 @@ class City:
         print(minimal_report)
         return minimal_report
 
-    def gui_human_render(self):
-        return
-
     def human_render(self):
         # Build up console output
         header = pf.figlet_format('ZGame Status')
