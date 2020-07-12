@@ -39,6 +39,11 @@ class DEPLOYMENTS(IntEnum):
     def get_random(cls):
         return random.choice(list(DEPLOYMENTS))
 
+    @classmethod
+    def get_weight(cls):
+        weights = {}
+
+
     @staticmethod
     def get_value_from_string(deployment):
         for dep in DEPLOYMENTS:
