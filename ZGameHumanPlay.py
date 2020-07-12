@@ -49,20 +49,28 @@ class ZGame:
         print('Starting new game with human play!')
         self.env.reset()
         self.env.render(mode='human')
-        for turn in range(self.max_turns):
+        i = 0
+        for i in range(self.max_turns):
             self.env.print_player_action_selections()
             print('Input Action - Location 1:')
-            location_1 = int(input())
+            location_1 = input()
             print('Input Action - Deployment 1:')
-            deployment_1 = int(input())
+            deployment_1 = input()
             print('Input Action - Location 2:')
-            location_2 = int(input())
+            location_2 = input()
             print('Input Action - Deployment 2:')
-            deployment_2 = int(input())
-            actions = self.env.encode_raw_action(location_1=LOCATIONS(location_1),
-                                                 deployment_1=DEPLOYMENTS(deployment_1),
-                                                 location_2=LOCATIONS(location_2),
-                                                 deployment_2=DEPLOYMENTS(deployment_2))
+            deployment_2 = input()
+            try:
+                actions = self.env.encode_raw_action(location_1=LOCATIONS(int(location_1)),
+                                                     deployment_1=DEPLOYMENTS(int(deployment_1)),
+                                                     location_2=LOCATIONS(int(location_2)),
+                                                     deployment_2=DEPLOYMENTS(int(deployment_2)))
+            except:
+                print('>>> Input error. Try again.')
+                i -= 1
+                continue
+            else:
+                print('>>> Input success.')
             observation, reward, done, info = self.env.step(actions)
             print(info)
             self.env.render(mode='human')
