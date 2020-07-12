@@ -216,10 +216,47 @@ class City:
         self._update_artificial_states()
         self._update_natural_states()
 
+    # TODO
+    # def fear_calc(self):
+    #
+    #     npcs = self.num_npcs
+    #     alive = self.num_alive
+    #     dead = self.num_dead
+    #     ashen = self.num_ashen
+    #     human = self.num_human
+    #     bitten = self.num_zombie_bitten
+    #     zombie = self.num_zombie
+    #     healthy = self.num_healthy
+    #     incubating = self.num_incubating
+    #     flu = self.num_flu
+    #     immune = self.num_immune
+    #     moving = self.num_moving
+    #     active = self.num_active
+    #     sickly = self.num_sickly
+    #
+    #     # reduces fear:
+    #     p_healthy = healthy/human
+    #     p_immune = immune/human
+    #     p_active = active/moving
+    #     p_ashen = ashen/(dead+ashen)
+    #
+    #     # induces fear:
+    #     p_zombie = zombie/moving
+    #     p_flu = flu/human
+    #     p_sickly = sickly/human
+    #     p_dead = dead/(dead+ashen)
+    #
+    #
+    #
+    #     return
+
+    # TODO
     def _update_trackers(self):
         # Update fear and resources increments
         fear_cost_per_turn = 0
         resource_cost_per_turn = 0
+
+
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
             for dep in nbh.deployments:
