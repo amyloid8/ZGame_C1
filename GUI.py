@@ -25,7 +25,6 @@ class GUI(Frame):
     def create_widgets(self):
         self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
         str = self.env.render(mode='human')
-        self.env.print_player_action_selections()
 
         #Label(self, text = str).grid(row = 0, column = 0, columnspan = 4, sticky = W)
         Label(self, text = "", bg = "blue", width = 65).grid(row = 19, column = 0, columnspan = 3, sticky = W)

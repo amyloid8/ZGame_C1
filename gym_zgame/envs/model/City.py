@@ -1006,7 +1006,6 @@ class City:
 
         # Close out console output
         fancy_string += ebuffer
-        print(fancy_string)
         return fancy_string
 
     @staticmethod
