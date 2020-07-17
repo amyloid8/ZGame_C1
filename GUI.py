@@ -24,18 +24,10 @@ class GUI(Frame):
 
     def create_widgets(self):
         self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
-        print('Starting new game with human play!')
         str = self.env.render(mode='human')
         self.env.print_player_action_selections()
 
         #Label(self, text = str).grid(row = 0, column = 0, columnspan = 4, sticky = W)
-
-        header = pf.figlet_format('ZGame Status')
-        fbuffer = '--------------------------------------------------------------------------------------------'
-        fbuffer2 = '********************************************************************************************'
-        ebuffer = '********************************************************************************************\n' \
-                  '--------------------------------------------------------------------------------------------'
-        line = "===================================================================="
         Label(self, text = "", bg = "blue", width = 65).grid(row = 19, column = 0, columnspan = 3, sticky = W)
         Label(self, text = "", bg = "blue", width = 65).grid(row = 21, column = 0, columnspan = 3, sticky = W)
         Label(self, text = "", bg = "blue", width = 65).grid(row = 23, column = 0, columnspan = 3, sticky = W)
@@ -79,8 +71,6 @@ class GUI(Frame):
         Label(self, text = " ",bg="green", height = 48).grid(row = 0, column = 7, rowspan = 30, sticky = W)
 
 
-
-        print(self.neighborhoods)
 
         Label(self, text = "location 1").grid(row = 26, column = 0, columnspan = 1, sticky = W)
         self.loc1 = Entry(self)
@@ -215,10 +205,6 @@ class GUI(Frame):
 
     def quit(self):
         self.winfo_children()[0].quit()
-        # for widget in self.winfo_children():
-        #     widget.quit()
-        #Label(self, text = "Please exit the game manually").grid(row = 0, column = 0, sticky = W)
-
     def update(self):
         self.env.print_player_action_selections()
         location_1 = int(self.loc1.get())
