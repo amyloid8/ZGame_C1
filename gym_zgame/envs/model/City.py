@@ -13,8 +13,11 @@ from gym_zgame.envs.enums.NPC_ACTIONS import NPC_ACTIONS
 
 class City:
 
-    def __init__(self, loc_npc_range=(9, 15)):
+    def __init__(self, loc_npc_range=(9, 15), fear_file = "fear_config.json", resource_file ="resource_config.json"):
         # Main parameters
+        self.FEAR_FILENAME = fear_file
+        self.RESOURCE_FILENAME = resource_file
+
         self.neighborhoods = []
         self._init_neighborhoods(loc_npc_range)
         self._init_neighborhood_threats()
@@ -32,6 +35,7 @@ class City:
         self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
                             DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
                             DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY]
+
         # Keep summary stats up to date for ease
         self.num_npcs = 0
         self.num_alive = 0
@@ -48,6 +52,24 @@ class City:
         self.num_active = 0
         self.num_sickly = 0
         self.update_summary_stats()
+
+        # interval of [-10,10] where 10 is big fear
+        self.DEP_FEAR_WEIGHTS = {}
+        self._init_fear(self.FEAR_FILENAME)
+
+        # interval of [-5 to 5] where -10 means you acquire resources, 10 means you pay resources.
+        self.DEP_RESOURCE_COST = {}
+        self._init_costs(self.RESOURCE_FILENAME)
+
+    def _init_fear(self, filename):
+        with open(filename) as config_file:
+            data = json.load(config_file)
+        self.DEP_FEAR_WEIGHTS.update(data)
+
+    def _init_costs(self, filename):
+        with open(filename) as config_file:
+            data = json.load(config_file)
+        self.DEP_RESOURCE_COST.update(data)
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
@@ -218,48 +240,54 @@ class City:
 
     def _update_trackers(self):
         # Update fear and resources increments
-        fear_cost_per_turn = 0
-        resource_cost_per_turn = 0
+        weight_sum = 0
+        cost_sum = 0
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
             for dep in nbh.deployments:
+                print(dep.name)
+                weight_sum += int(self.DEP_FEAR_WEIGHTS.get(dep.name))
+                cost_sum += self.DEP_RESOURCE_COST.get(dep.name)
+        fear_cost_per_turn = weight_sum * 10
+        resource_cost_per_turn = cost_sum
+
                 # deployments not included do not have fear or resources costs
-                if dep is DEPLOYMENTS.QUARANTINE_FENCED:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.BITE_CENTER_AMPUTATE:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.Z_CURE_CENTER_FDA:
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.Z_CURE_CENTER_EXP:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.FLU_VACCINE_MAN:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.BROADCAST_DONT_PANIC:
-                    fear_cost_per_turn += -1
-                elif dep is DEPLOYMENTS.BROADCAST_CALL_TO_ARMS:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.SNIPER_TOWER_FREE:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.PHEROMONES_MEAT:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_ON:
-                    if nbh.num_active >= 5:
-                        resource_cost_per_turn -= 1
-                elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_OFF:
-                    resource_cost_per_turn -= 2
-                elif dep is DEPLOYMENTS.RALLY_POINT_FULL:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.FIREBOMB_PRIMED:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
-                    fear_cost_per_turn += 10
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
+                # if dep is DEPLOYMENTS.QUARANTINE_FENCED:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.BITE_CENTER_AMPUTATE:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.Z_CURE_CENTER_FDA:
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.Z_CURE_CENTER_EXP:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.FLU_VACCINE_MAN:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.BROADCAST_DONT_PANIC:
+                #     fear_cost_per_turn += -1
+                # elif dep is DEPLOYMENTS.BROADCAST_CALL_TO_ARMS:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.SNIPER_TOWER_FREE:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.PHEROMONES_MEAT:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_ON:
+                #     if nbh.num_active >= 5:
+                #         resource_cost_per_turn -= 1
+                # elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_OFF:
+                #     resource_cost_per_turn -= 2
+                # elif dep is DEPLOYMENTS.RALLY_POINT_FULL:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.FIREBOMB_PRIMED:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
+                #     fear_cost_per_turn += 10
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
         self.delta_fear = fear_cost_per_turn
         self.delta_resources = resource_cost_per_turn
 
