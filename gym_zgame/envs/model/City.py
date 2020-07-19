@@ -13,10 +13,10 @@ from gym_zgame.envs.enums.NPC_ACTIONS import NPC_ACTIONS
 
 class City:
 
-    def __init__(self, loc_npc_range=(9, 15), fear_file = "fear_config.json", resource_file ="resource_config.json"):
+    def __init__(self, loc_npc_range=(15, 31), config_file = 'city_config.json'):
         # Main parameters
-        self.FEAR_FILENAME = fear_file
-        self.RESOURCE_FILENAME = resource_file
+
+        self.FILENAME = config_file
 
         self.neighborhoods = []
         self._init_neighborhoods(loc_npc_range)
@@ -55,21 +55,22 @@ class City:
 
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
-        self._init_fear(self.FEAR_FILENAME)
 
         # interval of [-5 to 5] where -10 means you acquire resources, 10 means you pay resources.
         self.DEP_RESOURCE_COST = {}
-        self._init_costs(self.RESOURCE_FILENAME)
 
-    def _init_fear(self, filename):
-        with open(filename) as config_file:
-            data = json.load(config_file)
-        self.DEP_FEAR_WEIGHTS.update(data)
+        # weights for total score calculation
+        self.SCORE_WEIGHTS = {}
 
-    def _init_costs(self, filename):
-        with open(filename) as config_file:
-            data = json.load(config_file)
-        self.DEP_RESOURCE_COST.update(data)
+        self._init_config(self.FILENAME)
+
+    # initializes following from config file: fear, resource cost
+    def _init_config(self, filename):
+        with open(filename) as file:
+            data = json.load(file)
+        self.DEP_FEAR_WEIGHTS.update(data["fear_config"])
+        self.DEP_RESOURCE_COST.update(data["resource_config"])
+        self.SCORE_WEIGHTS.update(data["score_config"])
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
@@ -245,11 +246,11 @@ class City:
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
             for dep in nbh.deployments:
-                print(dep.name)
                 weight_sum += int(self.DEP_FEAR_WEIGHTS.get(dep.name))
                 cost_sum += self.DEP_RESOURCE_COST.get(dep.name)
-        fear_cost_per_turn = weight_sum * 10
-        resource_cost_per_turn = cost_sum
+        # IMPORTANT: these sums add up the factors of ALL deployments in the nbh, not only the new deployments.
+        self.delta_fear = weight_sum
+        self.delta_resources = cost_sum
 
                 # deployments not included do not have fear or resources costs
                 # if dep is DEPLOYMENTS.QUARANTINE_FENCED:
@@ -288,12 +289,12 @@ class City:
                 # elif dep is DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY:
                 #     fear_cost_per_turn += 1
                 #     resource_cost_per_turn += 1
-        self.delta_fear = fear_cost_per_turn
-        self.delta_resources = resource_cost_per_turn
 
     def _update_global_states(self):
-        self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
-        self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
+        #self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
+        self.resources = self.delta_resources  # update resource cost from deployments (ALL deployments)
+        # self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
+        self.fear = self.delta_fear  # update fear from deployments (ALL deployments)
         if self.fear < 0:
             self.fear = 0
         if self.resources < 0:
@@ -832,14 +833,21 @@ class City:
 
     def get_score(self):
         self.update_summary_stats()
-        active_weight = 1.0
-        sickly_weight = 0.5
-        fear_weight = 1.0
-        zombie_weight = 2.0
+        weights = self.SCORE_WEIGHTS
+        active_weight = weights["active_weight"]
+        sickly_weight = weights["sickly_weight"]
+        fear_weight = weights["fear_weight"]  # removes fear from score, may need to adjust in the future.
+        zombie_weight = weights["zombie_weight"]
+        dead_weight = weights["dead_weight"]
+        ashen_weight = weights["ashen_weight"]
+        resource_weight = weights["resource_weight"]
         score = (self.num_active * active_weight) + \
                 (self.num_sickly * sickly_weight) - \
                 (self.fear * fear_weight) - \
-                (self.num_zombie * zombie_weight)
+                (self.num_zombie * zombie_weight) + \
+                (self.resources * resource_weight) - \
+                (self.num_dead * dead_weight) - \
+                (self.num_ashen * ashen_weight)
         scaled_score = np.floor((score + 800) / 100)  # scaled to fit env state space range
         return scaled_score
 
