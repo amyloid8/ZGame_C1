@@ -13,8 +13,11 @@ from gym_zgame.envs.enums.NPC_ACTIONS import NPC_ACTIONS
 
 class City:
 
-    def __init__(self, loc_npc_range=(9, 15)):
+    def __init__(self, loc_npc_range=(15, 31), config_file = 'city_config.json'):
         # Main parameters
+
+        self.FILENAME = config_file
+
         self.neighborhoods = []
         self._init_neighborhoods(loc_npc_range)
         self._init_neighborhood_threats()
@@ -32,6 +35,7 @@ class City:
         self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
                             DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
                             DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY]
+
         # Keep summary stats up to date for ease
         self.num_npcs = 0
         self.num_alive = 0
@@ -48,6 +52,25 @@ class City:
         self.num_active = 0
         self.num_sickly = 0
         self.update_summary_stats()
+
+        # interval of [-10,10] where 10 is big fear
+        self.DEP_FEAR_WEIGHTS = {}
+
+        # interval of [-5 to 5] where -10 means you acquire resources, 10 means you pay resources.
+        self.DEP_RESOURCE_COST = {}
+
+        # weights for total score calculation
+        self.SCORE_WEIGHTS = {}
+
+        self._init_config(self.FILENAME)
+
+    # initializes following from config file: fear, resource cost
+    def _init_config(self, filename):
+        with open(filename) as file:
+            data = json.load(file)
+        self.DEP_FEAR_WEIGHTS.update(data["fear_config"])
+        self.DEP_RESOURCE_COST.update(data["resource_config"])
+        self.SCORE_WEIGHTS.update(data["score_config"])
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
@@ -219,56 +242,60 @@ class City:
 
     def _update_trackers(self):
         # Update fear and resources increments
-        fear_cost_per_turn = 0
-        resource_cost_per_turn = 0
-
-
+        weight_sum = 0
+        cost_sum = 0
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
-            for dep in nbh.current_deployments:
+            for dep in nbh.deployments:
+                weight_sum += int(self.DEP_FEAR_WEIGHTS.get(dep.name))
+                cost_sum += self.DEP_RESOURCE_COST.get(dep.name)
+        # IMPORTANT: these sums add up the factors of ALL deployments in the nbh, not only the new deployments.
+        self.delta_fear = weight_sum
+        self.delta_resources = cost_sum
+
                 # deployments not included do not have fear or resources costs
-                if dep is DEPLOYMENTS.QUARANTINE_FENCED:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.BITE_CENTER_AMPUTATE:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.Z_CURE_CENTER_FDA:
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.Z_CURE_CENTER_EXP:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.FLU_VACCINE_MAN:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.BROADCAST_DONT_PANIC:
-                    fear_cost_per_turn += -1
-                elif dep is DEPLOYMENTS.BROADCAST_CALL_TO_ARMS:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.SNIPER_TOWER_FREE:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.PHEROMONES_MEAT:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_ON:
-                    if nbh.num_active >= 5:
-                        resource_cost_per_turn -= 1
-                elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_OFF:
-                    resource_cost_per_turn -= 2
-                elif dep is DEPLOYMENTS.RALLY_POINT_FULL:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.FIREBOMB_PRIMED:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
-                    fear_cost_per_turn += 10
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-        self.delta_fear = fear_cost_per_turn
-        self.delta_resources = resource_cost_per_turn
+                # if dep is DEPLOYMENTS.QUARANTINE_FENCED:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.BITE_CENTER_AMPUTATE:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.Z_CURE_CENTER_FDA:
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.Z_CURE_CENTER_EXP:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.FLU_VACCINE_MAN:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.BROADCAST_DONT_PANIC:
+                #     fear_cost_per_turn += -1
+                # elif dep is DEPLOYMENTS.BROADCAST_CALL_TO_ARMS:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.SNIPER_TOWER_FREE:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.PHEROMONES_MEAT:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_ON:
+                #     if nbh.num_active >= 5:
+                #         resource_cost_per_turn -= 1
+                # elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_OFF:
+                #     resource_cost_per_turn -= 2
+                # elif dep is DEPLOYMENTS.RALLY_POINT_FULL:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.FIREBOMB_PRIMED:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
+                #     fear_cost_per_turn += 10
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
 
     def _update_global_states(self):
-        self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
-        self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
+        #self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
+        self.resources = self.delta_resources  # update resource cost from deployments (ALL deployments)
+        # self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
+        self.fear = self.delta_fear  # update fear from deployments (ALL deployments)
         if self.fear < 0:
             self.fear = 0
         if self.resources < 0:
@@ -807,14 +834,21 @@ class City:
 
     def get_score(self):
         self.update_summary_stats()
-        active_weight = 1.0
-        sickly_weight = 0.5
-        fear_weight = 1.0
-        zombie_weight = 2.0
+        weights = self.SCORE_WEIGHTS
+        active_weight = weights["active_weight"]
+        sickly_weight = weights["sickly_weight"]
+        fear_weight = weights["fear_weight"]  # removes fear from score, may need to adjust in the future.
+        zombie_weight = weights["zombie_weight"]
+        dead_weight = weights["dead_weight"]
+        ashen_weight = weights["ashen_weight"]
+        resource_weight = weights["resource_weight"]
         score = (self.num_active * active_weight) + \
                 (self.num_sickly * sickly_weight) - \
                 (self.fear * fear_weight) - \
-                (self.num_zombie * zombie_weight)
+                (self.num_zombie * zombie_weight) + \
+                (self.resources * resource_weight) - \
+                (self.num_dead * dead_weight) - \
+                (self.num_ashen * ashen_weight)
         scaled_score = np.floor((score + 800) / 100)  # scaled to fit env state space range
         return scaled_score
 
