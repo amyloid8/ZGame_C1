@@ -129,7 +129,6 @@ class City:
             dead_npcs.append(dead_npc)
         dead_loc.add_NPCs(dead_npcs)
         dead_loc.orig_dead += 10
-
         # Add 1 zombie in a random location
         zombie_loc = random.choice(self.neighborhoods)
         zombie_npc = NPC()
@@ -291,6 +290,7 @@ class City:
                 #     fear_cost_per_turn += 1
                 #     resource_cost_per_turn += 1
 
+
     def _update_global_states(self):
         #self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
         self.resources = self.delta_resources  # update resource cost from deployments (ALL deployments)
@@ -361,7 +361,7 @@ class City:
 
     def _art_trans_flu_vaccine_free(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
-        vaccine_success = min(0, 0.2 - (0.01 * self.fear))
+        vaccine_success = max(0, 0.2 - (0.01 * self.fear))
         for npc in nbh.NPCs:
             if (npc.state_flu is not NPC_STATES_FLU.IMMUNE) and (npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE):
                 if random.random() <= vaccine_success:
@@ -446,10 +446,11 @@ class City:
             burial_prob = trans_probs.get('burial')
 
             # Update based on deployments
+
             if DEPLOYMENTS.KILN_OVERSIGHT in nbh.current_deployments:
-                burial_prob = max(1.0, burial_prob * 1.5)
+                burial_prob = min(1.0, burial_prob * 1.5)
             if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.current_deployments:
-                burial_prob = max(1.0, burial_prob * 5.0)
+                burial_prob = min(1.0, burial_prob * 5.0)
 
             # Universal Law: Burial
             for npc in nbh.NPCs:
@@ -458,6 +459,7 @@ class City:
                         npc.change_dead_state(NPC_STATES_DEAD.ASHEN)
 
     def _flu_transitions(self):
+        # TODO: turn into config.txt
         for nbh_index in range(len(self.neighborhoods)):
             # Get baselines
             nbh = self.neighborhoods[nbh_index]
@@ -472,14 +474,15 @@ class City:
             mutate_prob = trans_probs.get('mutate')
 
             # Update based on deployments
+
             if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.current_deployments:
-                fumes_prob = max(1.0, fumes_prob * 10.0)
+                fumes_prob = min(1.0, fumes_prob * 10.0)
             if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
-                cough_prob = max(1.0, fumes_prob * 0.75)
-                fumes_prob = max(1.0, fumes_prob * 0.75)
+                cough_prob = min(1.0, fumes_prob * 0.75)
+                fumes_prob = min(1.0, fumes_prob * 0.75)
             if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.current_deployments:
-                cough_prob = max(1.0, fumes_prob * 0.25)
-                fumes_prob = max(1.0, fumes_prob * 0.25)
+                cough_prob = min(1.0, fumes_prob * 0.25)
+                fumes_prob = min(1.0, fumes_prob * 0.25)
 
             # Flu Laws
             for npc in nbh.NPCs:
@@ -509,6 +512,7 @@ class City:
                         npc.change_flu_state(NPC_STATES_FLU.HEALTHY)
 
     def _zombie_transitions(self):
+        # TODO: turn into config.txt
         for nbh_index in range(len(self.neighborhoods)):
             # Get baselines
             nbh = self.neighborhoods[nbh_index]
@@ -589,6 +593,7 @@ class City:
                         npc.add_to_bag(npc_action)
 
     def adjust_bags_for_deployments(self):
+        # TODO: turn into config.txt
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
             if DEPLOYMENTS.QUARANTINE_OPEN in nbh.current_deployments:
@@ -755,7 +760,7 @@ class City:
         # Some NPCs want to stay here to keep from spreading the disease
         for npc in nbh.NPCs:
             # People who are sickly and active want to stay in place
-            if npc.sickly and npc.active:
+            if npc.sickly or npc.active:
                 for _ in range(9):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
 

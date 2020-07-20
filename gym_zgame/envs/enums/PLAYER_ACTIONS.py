@@ -39,10 +39,6 @@ class DEPLOYMENTS(IntEnum):
     def get_random(cls):
         return random.choice(list(DEPLOYMENTS))
 
-    @classmethod
-    def get_weight(cls):
-        weights = {}
-
 
     @staticmethod
     def get_value_from_string(deployment):
@@ -100,8 +96,3 @@ class LOCATIONS(IntEnum):
         else:
             warnings.warn('Tried to convert string ({}) to LOCATION enum and failed; returned CENTER'.format(location))
             return LOCATIONS.CENTER.name
-class Runner:
-    def runner(self):
-        string = DEPLOYMENTS.get_name_from_string("QUARANTINE_OPEN")
-        print(string + ' hi')
-    runner(DEPLOYMENTS)
