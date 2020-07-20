@@ -1,9 +1,8 @@
-from enum import IntEnum
 import random
 import warnings
 
 
-class LEVELS(IntEnum):
+class LEVELS:
     level_Dict = {'NONE':0,'FEW':1,'MANY':2}
 
     @staticmethod
@@ -20,7 +19,7 @@ class LEVELS(IntEnum):
         if level.upper() in level_Dict:
             return level_Dict[level.upper()]
         else:
-            warnings.warn('String ({}) not in level_Dict; returned STAY'.format(level))
+            warnings.warn('String ({}) not in level_Dict; returned NONE'.format(level))
             return level_Dict['NONE']
 
     @staticmethod
@@ -28,5 +27,5 @@ class LEVELS(IntEnum):
         if level.upper() in level_Dict:
             return level.upper()
         else:
-            warnings.warn('String ({}) not in level_Dict; returned STAY'.format(level))
+            warnings.warn('String ({}) not in level_Dict; returned NONE'.format(level))
             return 'NONE'

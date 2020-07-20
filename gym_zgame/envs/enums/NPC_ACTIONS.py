@@ -3,7 +3,7 @@ import warnings
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS
 
 
-class NPC_ACTIONS():
+class NPC_ACTIONS:
     action_Dict = {'STAY': 0, 'N': 1,'S':2,"E":3,"W":4}
 
     @staticmethod
