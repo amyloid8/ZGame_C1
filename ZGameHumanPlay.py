@@ -76,10 +76,10 @@ class ZGame:
                 canceled_dep = ''
                 hasMoney = True
                 if costs[dep_name_1] > self.env.city.get_resources():
-                    canceled_dep += dep_name_1
+                    canceled_dep += dep_name_1 + ' '
                     hasMoney = False
                 if costs[dep_name_2] > self.env.city.get_resources():
-                    canceled_dep += ', ' + dep_name_2
+                    canceled_dep += dep_name_2
                     hasMoney = False
                 if hasMoney == False:
                     print('>>> Out of resources. Wasted deployment(s): ' + canceled_dep)
