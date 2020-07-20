@@ -34,7 +34,8 @@ class City:
         # CONSTANTS
         self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
                             DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
-                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY]
+                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY, DEPLOYMENTS.TESTING_CENTER_MAN,
+                            DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
 
         # Keep summary stats up to date for ease
         self.num_npcs = 0
@@ -71,6 +72,9 @@ class City:
         self.DEP_FEAR_WEIGHTS.update(data["fear_config"])
         self.DEP_RESOURCE_COST.update(data["resource_config"])
         self.SCORE_WEIGHTS.update(data["score_config"])
+
+    def get_cost_dict(self):
+        return self.DEP_RESOURCE_COST
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
@@ -139,6 +143,9 @@ class City:
             flu_npc = NPC()
             flu_npc.change_flu_state(NPC_STATES_FLU.INCUBATING)
             nbh.add_NPC(flu_npc)
+
+    def get_resources(self):
+        return self.resources
 
     def _get_original_state_metrics(self):
         og_alive = 0

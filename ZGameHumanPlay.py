@@ -4,6 +4,7 @@ import gym
 import gym_zgame
 from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
+from gym_zgame.envs.model.City import City
 
 
 class ZGame:
@@ -51,17 +52,31 @@ class ZGame:
             location_2 = input()
             print('Input Action - Deployment 2:')
             deployment_2 = input()
+
             try:
                 actions = self.env.encode_raw_action(location_1=LOCATIONS(int(location_1)),
                                                      deployment_1=DEPLOYMENTS(int(deployment_1)),
                                                      location_2=LOCATIONS(int(location_2)),
                                                      deployment_2=DEPLOYMENTS(int(deployment_2)))
+
             except:
                 print('>>> Input error. Try again.')
                 i -= 1
                 continue
             else:
                 print('>>> Input success.')
+                dep_name_1 = ''
+                dep_name_2 = ''
+                for dep in DEPLOYMENTS:
+                    if int(deployment_1) == dep.value:
+                        dep_name_1 = dep.name
+                    if int(deployment_2) == dep.value:
+                        dep_name_2 = dep.name
+                costs = self.env.city.get_cost_dict()
+                if costs[dep_name_1] > self.env.city.get_resources() or + \
+                        costs[dep_name_1] + costs[dep_name_2] > self.env.city.get_resources():
+                    print('>>> Out of resources. Wasted a turn :(')
+
             observation, reward, done, info = self.env.step(actions)
             print(info)
             self.env.render(mode='human')

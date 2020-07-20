@@ -29,7 +29,7 @@
       "TESTING_CENTER_MAN": 1,
       "SUPPLY_DEPOT": 0,
       "FACTORY": 0,
-      "DONATION_CENTER": -4,
+      "BIOHAZARD_REPSONSE_TEAM": 2,
       "VOLUNTEER_RECRUITMENT": -6 },
   "resource_config":
     { "NONE": 0,
@@ -61,7 +61,7 @@
       "TESTING_CENTER_MAN": 2,
       "SUPPLY_DEPOT": -5,
       "FACTORY": -5,
-      "DONATION_CENTER": -2,
+      "BIOHAZARD_RESPONSE_TEAM": 3,
       "VOLUNTEER_RECRUITMENT": -3 },
   "score_config":
     { "active_weight": 2.5,
