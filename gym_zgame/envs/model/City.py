@@ -56,7 +56,7 @@ class City:
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
 
-        # interval of [-5 to 5] where -10 means you acquire resources, 10 means you pay resources.
+        # interval of [-5 to 5] where -5 means you acquire resources, 5 means you pay resources.
         self.DEP_RESOURCE_COST = {}
 
         # weights for total score calculation
@@ -248,8 +248,8 @@ class City:
 
             for dep in nbh.current_deployments:
 
-                weight_sum += int(self.DEP_FEAR_WEIGHTS.get(dep.name))
-                cost_sum += self.DEP_RESOURCE_COST.get(dep.name)
+                weight_sum += self.DEP_FEAR_WEIGHTS.get(dep.name)
+                cost_sum -= self.DEP_RESOURCE_COST.get(dep.name)
         # IMPORTANT: these sums add up the factors of ALL deployments in the nbh, not only the new deployments.
         self.delta_fear = weight_sum
         self.delta_resources = cost_sum
@@ -292,9 +292,8 @@ class City:
                 #     fear_cost_per_turn += 1
                 #     resource_cost_per_turn += 1
 
-
     def _update_global_states(self):
-        #self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
+        # self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
         self.resources = self.delta_resources  # update resource cost from deployments (ALL deployments)
         # self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
         self.fear = self.delta_fear  # update fear from deployments (ALL deployments)
