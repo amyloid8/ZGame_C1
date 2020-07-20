@@ -73,9 +73,16 @@ class ZGame:
                     if int(deployment_2) == dep.value:
                         dep_name_2 = dep.name
                 costs = self.env.city.get_cost_dict()
-                if costs[dep_name_1] > self.env.city.get_resources() or + \
-                        costs[dep_name_1] + costs[dep_name_2] > self.env.city.get_resources():
-                    print('>>> Out of resources. Wasted a turn :(')
+                canceled_dep = ''
+                hasMoney = True
+                if costs[dep_name_1] > self.env.city.get_resources():
+                    canceled_dep += dep_name_1
+                    hasMoney = False
+                if costs[dep_name_2] > self.env.city.get_resources():
+                    canceled_dep += ', ' + dep_name_2
+                    hasMoney = False
+                if hasMoney == False:
+                    print('>>> Out of resources. Wasted deployment(s): ' + canceled_dep)
 
             observation, reward, done, info = self.env.step(actions)
             print(info)

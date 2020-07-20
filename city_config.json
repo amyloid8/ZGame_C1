@@ -27,7 +27,7 @@
       "SOCIAL_DISTANCING_CELEBRITY": 2,
       "TESTING_CENTER_OPT": 0,
       "TESTING_CENTER_MAN": 1,
-      "SUPPLY_DEPOT": 0,
+      "SUPPLY_DEPOT": -3,
       "FACTORY": 0,
       "VOLUNTEER_RECRUITMENT": -6 },
   "resource_config":
