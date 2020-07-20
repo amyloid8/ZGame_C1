@@ -13,14 +13,14 @@ class NPC_ACTIONS():
 
     @classmethod
     def get_random(cls):
-        return random.choice(action_Dict.keys())
+        return random.choice(list(NPC_ACTIONS))
 
     @staticmethod
     def get_value_from_string(action):
         if action.upper() in action_Dict:
             return action_Dict[action]
         else:
-            warnings.warn('String ({}) not in action_Dict; returned STAY'.format(action))
+            warnings.warn('Tried to convert string ({}) to NPC_ACTIONS enum and failed; returned STAY'.format(action))
             return action_Dict['STAY']
 
     @staticmethod
@@ -28,7 +28,7 @@ class NPC_ACTIONS():
         if action.upper() in action_Dict:
             return action.upper()
         else:
-            warnings.warn('String ({}) not in action_Dict; returned STAY'.format(action))
+            warnings.warn('Tried to convert string ({}) to NPC_ACTIONS enum and failed; returned STAY'.format(action))
             return 'STAY'
 
     @staticmethod
