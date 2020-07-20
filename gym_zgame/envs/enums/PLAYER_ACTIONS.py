@@ -39,18 +39,21 @@ class DEPLOYMENTS(IntEnum):
     def get_random(cls):
         return random.choice(list(DEPLOYMENTS))
 
+
     @staticmethod
     def get_value_from_string(deployment):
-        if deployment.upper() in [d.name for d in DEPLOYMENTS]:
-            exec('return DEPLOYMENTS.' + deployment.upper() + '.value')      
+        for dep in DEPLOYMENTS:
+            if deployment.upper() == dep.name:
+                return dep.value
         else:
             warnings.warn('Tried to convert string ({}) to DEPLOYMENTS enum and failed; returned NONE'.format(deployment))
             return DEPLOYMENTS.NONE.value
 
     @staticmethod
-    def get_value_from_string(deployment):
-        if deployment.upper() in [d.name for d in DEPLOYMENTS]:
-            exec('return DEPLOYMENTS.' + deployment.upper() + '.name')       
+    def get_name_from_string(deployment):
+        for dep in DEPLOYMENTS:
+            if deployment.upper() == dep.name:
+                return dep.name
         else:
             warnings.warn('Tried to convert string ({}) to DEPLOYMENTS enum and failed; returned NONE'.format(deployment))
             return DEPLOYMENTS.NONE.name
@@ -77,16 +80,18 @@ class LOCATIONS(IntEnum):
 
     @staticmethod
     def get_value_from_string(location):
-        if location.upper() in [l.name for l in LOCATIONS]:
-            exec('return LOCATIONS.' + location.upper() + '.value')
+        for loc in LOCATIONS:
+            if location.upper() == loc.name:
+                return loc.value
         else:
             warnings.warn('Tried to convert string ({}) to LOCATION enum and failed; returned CENTER'.format(location))
             return LOCATIONS.CENTER.value
 
     @staticmethod
     def get_name_from_string(location):
-        if location.upper() in [l.name for l in LOCATIONS]:
-            exec('return LOCATIONS.' + location.upper() + '.name')
+        for loc in LOCATIONS:
+            if location.upper() == loc.name:
+                return loc.name
         else:
             warnings.warn('Tried to convert string ({}) to LOCATION enum and failed; returned CENTER'.format(location))
             return LOCATIONS.CENTER.name

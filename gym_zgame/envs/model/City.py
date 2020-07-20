@@ -9,13 +9,15 @@ from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
 from gym_zgame.envs.enums.LEVELS import LEVELS
 from gym_zgame.envs.enums.NPC_STATES import NPC_STATES_DEAD, NPC_STATES_ZOMBIE, NPC_STATES_FLU
 from gym_zgame.envs.enums.NPC_ACTIONS import NPC_ACTIONS
-from ConfigParser import SafeConfigParser
 
 
 class City:
 
-    def __init__(self, loc_npc_range=(9, 15)):
+    def __init__(self, loc_npc_range=(15, 31), config_file = 'city_config.json'):
         # Main parameters
+
+        self.FILENAME = config_file
+
         self.neighborhoods = []
         self._init_neighborhoods(loc_npc_range)
         self._init_neighborhood_threats()
@@ -33,6 +35,7 @@ class City:
         self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
                             DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
                             DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY]
+
         # Keep summary stats up to date for ease
         self.num_npcs = 0
         self.num_alive = 0
@@ -49,8 +52,25 @@ class City:
         self.num_active = 0
         self.num_sickly = 0
         self.update_summary_stats()
-        self.parsed_weights = SafeConfigParser()
-        self.parsed_weights.read('config.txt')
+
+        # interval of [-10,10] where 10 is big fear
+        self.DEP_FEAR_WEIGHTS = {}
+
+        # interval of [-5 to 5] where -10 means you acquire resources, 10 means you pay resources.
+        self.DEP_RESOURCE_COST = {}
+
+        # weights for total score calculation
+        self.SCORE_WEIGHTS = {}
+
+        self._init_config(self.FILENAME)
+
+    # initializes following from config file: fear, resource cost
+    def _init_config(self, filename):
+        with open(filename) as file:
+            data = json.load(file)
+        self.DEP_FEAR_WEIGHTS.update(data["fear_config"])
+        self.DEP_RESOURCE_COST.update(data["resource_config"])
+        self.SCORE_WEIGHTS.update(data["score_config"])
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
@@ -218,21 +238,66 @@ class City:
         self._update_artificial_states()
         self._update_natural_states()
 
+
     def _update_trackers(self):
         # Update fear and resources increments
-        fear_cost_per_turn = 0
-        resource_cost_per_turn = 0
+        weight_sum = 0
+        cost_sum = 0
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
-            for dep in nbh.deployments:
-                fear_cost_per_turn += self.parsed_weights.get('fear', dep.upper(), fallback=0)
-                resource_cost_per_turn += self.parsed_weights.get('resources', dep.upper(), fallback=0)
-        self.delta_fear = fear_cost_per_turn
-        self.delta_resources = resource_cost_per_turn
+
+            for dep in nbh.current_deployments:
+
+                weight_sum += int(self.DEP_FEAR_WEIGHTS.get(dep.name))
+                cost_sum += self.DEP_RESOURCE_COST.get(dep.name)
+        # IMPORTANT: these sums add up the factors of ALL deployments in the nbh, not only the new deployments.
+        self.delta_fear = weight_sum
+        self.delta_resources = cost_sum
+
+                # deployments not included do not have fear or resources costs
+                # if dep is DEPLOYMENTS.QUARANTINE_FENCED:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.BITE_CENTER_AMPUTATE:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.Z_CURE_CENTER_FDA:
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.Z_CURE_CENTER_EXP:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.FLU_VACCINE_MAN:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.BROADCAST_DONT_PANIC:
+                #     fear_cost_per_turn += -1
+                # elif dep is DEPLOYMENTS.BROADCAST_CALL_TO_ARMS:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.SNIPER_TOWER_FREE:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.PHEROMONES_MEAT:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_ON:
+                #     if nbh.num_active >= 5:
+                #         resource_cost_per_turn -= 1
+                # elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_OFF:
+                #     resource_cost_per_turn -= 2
+                # elif dep is DEPLOYMENTS.RALLY_POINT_FULL:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.FIREBOMB_PRIMED:
+                #     fear_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
+                #     fear_cost_per_turn += 10
+                #     resource_cost_per_turn += 1
+                # elif dep is DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY:
+                #     fear_cost_per_turn += 1
+                #     resource_cost_per_turn += 1
+
 
     def _update_global_states(self):
-        self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
-        self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
+        #self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
+        self.resources = self.delta_resources  # update resource cost from deployments (ALL deployments)
+        # self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
+        self.fear = self.delta_fear  # update fear from deployments (ALL deployments)
         if self.fear < 0:
             self.fear = 0
         if self.resources < 0:
@@ -249,7 +314,7 @@ class City:
         self.update_summary_stats()
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
-            for dep in nbh.deployments:
+            for dep in nbh.current_deployments:
                 if dep is DEPLOYMENTS.Z_CURE_CENTER_FDA:
                     self._art_trans_z_cure_center_fda(nbh_index)
                 elif dep is DEPLOYMENTS.Z_CURE_CENTER_EXP:
@@ -383,9 +448,10 @@ class City:
             burial_prob = trans_probs.get('burial')
 
             # Update based on deployments
-            if DEPLOYMENTS.KILN_OVERSIGHT in nbh.deployments:
+
+            if DEPLOYMENTS.KILN_OVERSIGHT in nbh.current_deployments:
                 burial_prob = min(1.0, burial_prob * 1.5)
-            if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.deployments:
+            if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.current_deployments:
                 burial_prob = min(1.0, burial_prob * 5.0)
 
             # Universal Law: Burial
@@ -410,12 +476,13 @@ class City:
             mutate_prob = trans_probs.get('mutate')
 
             # Update based on deployments
-            if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.deployments:
+
+            if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.current_deployments:
                 fumes_prob = min(1.0, fumes_prob * 10.0)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.deployments:
+            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
                 cough_prob = min(1.0, fumes_prob * 0.75)
                 fumes_prob = min(1.0, fumes_prob * 0.75)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.deployments:
+            if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.current_deployments:
                 cough_prob = min(1.0, fumes_prob * 0.25)
                 fumes_prob = min(1.0, fumes_prob * 0.25)
 
@@ -462,19 +529,19 @@ class City:
             rise_prob = trans_probs.get('mutate')
 
             # Update based on deployments
-            if DEPLOYMENTS.BITE_CENTER_DISINFECT in nbh.deployments:
+            if DEPLOYMENTS.BITE_CENTER_DISINFECT in nbh.current_deployments:
                 turn_prob = max(1.0, turn_prob * 0.5)
-            if DEPLOYMENTS.BITE_CENTER_AMPUTATE in nbh.deployments:
+            if DEPLOYMENTS.BITE_CENTER_AMPUTATE in nbh.current_deployments:
                 turn_prob = max(1.0, turn_prob * 0.05)
-            if DEPLOYMENTS.BROADCAST_CALL_TO_ARMS in nbh.deployments:
+            if DEPLOYMENTS.BROADCAST_CALL_TO_ARMS in nbh.current_deployments:
                 fight_back_prob = max(1.0, fight_back_prob * 5.0)
                 devour_prob = max(1.0, devour_prob * 1.25)
-            if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.deployments:
+            if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.current_deployments:
                 rise_prob = max(1.0, rise_prob * 10.0)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.deployments:
+            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
                 bite_prob = max(1.0, bite_prob * 0.75)
                 fight_back_prob = max(1.0, fight_back_prob * 0.75)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.deployments:
+            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
                 bite_prob = max(1.0, bite_prob * 0.25)
                 fight_back_prob = max(1.0, fight_back_prob * 0.25)
 
@@ -531,21 +598,21 @@ class City:
         # TODO: turn into config.txt
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
-            if DEPLOYMENTS.QUARANTINE_OPEN in nbh.deployments:
+            if DEPLOYMENTS.QUARANTINE_OPEN in nbh.current_deployments:
                 self._bag_adjust_quarantine_open(nbh_index)
-            if DEPLOYMENTS.QUARANTINE_FENCED in nbh.deployments:
+            if DEPLOYMENTS.QUARANTINE_FENCED in nbh.current_deployments:
                 self._bag_adjust_quarantine_fenced(nbh_index)
-            if DEPLOYMENTS.PHEROMONES_BRAINS in nbh.deployments:
+            if DEPLOYMENTS.PHEROMONES_BRAINS in nbh.current_deployments:
                 self._bag_adjust_pheromones_brains(nbh_index)
-            if DEPLOYMENTS.PHEROMONES_MEAT in nbh.deployments:
+            if DEPLOYMENTS.PHEROMONES_MEAT in nbh.current_deployments:
                 self._bag_adjust_pheromones_meat(nbh_index)
-            if DEPLOYMENTS.RALLY_POINT_OPT in nbh.deployments:
+            if DEPLOYMENTS.RALLY_POINT_OPT in nbh.current_deployments:
                 self._bag_adjust_rally_point_opt(nbh_index)
-            if DEPLOYMENTS.RALLY_POINT_FULL in nbh.deployments:
+            if DEPLOYMENTS.RALLY_POINT_FULL in nbh.current_deployments:
                 self._bag_adjust_rally_point_full(nbh_index)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.deployments:
+            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
                 self._bag_adjust_social_distancing_signs(nbh_index)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.deployments:
+            if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.current_deployments:
                 self._bag_adjust_social_distancing_celeb(nbh_index)
 
     def _bag_adjust_quarantine_open(self, nbh_index):
@@ -758,11 +825,11 @@ class City:
         nbh_new = self.neighborhoods[new_nbh_index]
         # Get chance of move succeeding based on deployments at new neighborhood
         prob_of_move = 1.0
-        if DEPLOYMENTS.QUARANTINE_FENCED in nbh_new.deployments:
+        if DEPLOYMENTS.QUARANTINE_FENCED in nbh_new.current_deployments:
             prob_of_move *= 0.05  # 95% chance of staying (move failing)
-        if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh_new.deployments:
+        if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh_new.current_deployments:
             prob_of_move *= 0.75  # 25% chance of staying (move failing)
-        if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh_new.deployments:
+        if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh_new.current_deployments:
             prob_of_move *= 0.25  # 75% chance of staying (move failing)
         # If the move is successful, add and remove the NPC from the neighborhoods
         if random.random() <= prob_of_move:
@@ -774,14 +841,21 @@ class City:
 
     def get_score(self):
         self.update_summary_stats()
-        active_weight = 1.0
-        sickly_weight = 0.5
-        fear_weight = 1.0
-        zombie_weight = 2.0
+        weights = self.SCORE_WEIGHTS
+        active_weight = weights["active_weight"]
+        sickly_weight = weights["sickly_weight"]
+        fear_weight = weights["fear_weight"]  # removes fear from score, may need to adjust in the future.
+        zombie_weight = weights["zombie_weight"]
+        dead_weight = weights["dead_weight"]
+        ashen_weight = weights["ashen_weight"]
+        resource_weight = weights["resource_weight"]
         score = (self.num_active * active_weight) + \
                 (self.num_sickly * sickly_weight) - \
                 (self.fear * fear_weight) - \
-                (self.num_zombie * zombie_weight)
+                (self.num_zombie * zombie_weight) + \
+                (self.resources * resource_weight) - \
+                (self.num_dead * dead_weight) - \
+                (self.num_ashen * ashen_weight)
         scaled_score = np.floor((score + 800) / 100)  # scaled to fit env state space range
         return scaled_score
 
@@ -841,8 +915,8 @@ class City:
             state[i + 1, 3] = self._mask_visible_data(nbh_data.get('num_sickly', 0)).value
             state[i + 1, 4] = self._mask_visible_data(nbh_data.get('num_zombie', 0)).value
             state[i + 1, 5] = self._mask_visible_data(nbh_data.get('num_dead', 0)).value
-            for j in range(len(nbh.deployments)):
-                state[i + 1, j + 6] = nbh.deployments[j].value
+            for j in range(len(nbh.current_deployments)):
+                state[i + 1, j + 6] = nbh.current_deployments[j].value
 
         return state
 
@@ -924,6 +998,9 @@ class City:
         city += PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_nw.orig_dead).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_n.orig_dead).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_ne.orig_dead).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_nw.get_current_deps()).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_n.get_current_deps()).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_ne.get_current_deps()).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '============================================================================================' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self._mask_visible_data(nbh_w.num_active).name).ljust(24) + \
                 PFont.bold + PFont.underline + PFore.purple + '(W)' + PControl.reset + ' ' + \
@@ -946,6 +1023,9 @@ class City:
         city += PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_w.orig_dead).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_c.orig_dead).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_e.orig_dead).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_w.get_current_deps()).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_c.get_current_deps()).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_e.get_current_deps()).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '============================================================================================' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self._mask_visible_data(nbh_sw.num_active).name).ljust(23) + \
                 PFont.bold + PFont.underline + PFore.purple + '(SW)' + PControl.reset + ' ' + \
@@ -968,6 +1048,9 @@ class City:
         city += PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_sw.orig_dead).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_s.orig_dead).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_se.orig_dead).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_sw.get_current_deps()).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_s.get_current_deps()).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_se.get_current_deps()).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '============================================================================================' + PBack.reset + '\n'
 
         fancy_string += city
