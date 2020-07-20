@@ -220,7 +220,7 @@ class GUI(Frame):
         #Label(self, text = "Please exit the game manually").grid(row = 0, column = 0, sticky = W)
 
     def update(self):
-        self.env.print_player_action_selections()
+        # self.env.print_player_action_selections()
         location_1 = int(self.loc1.get())
         deployment_1 = int(self.dep1.get())
         location_2 = int(self.loc2.get())
@@ -233,9 +233,6 @@ class GUI(Frame):
 
         print(info)
         self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
-
-        self.env.render(mode='human')
-        self.create_widgets()
 
         # Write action and stuff out to disk.
         data_to_log = {
@@ -254,3 +251,6 @@ class GUI(Frame):
         self.turn += 1
         if done:
             self.quit()
+
+        # self.env.render(mode='human')
+        self.create_widgets()
