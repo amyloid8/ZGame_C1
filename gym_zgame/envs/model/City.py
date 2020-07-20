@@ -9,7 +9,6 @@ from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
 from gym_zgame.envs.enums.LEVELS import LEVELS
 from gym_zgame.envs.enums.NPC_STATES import NPC_STATES_DEAD, NPC_STATES_ZOMBIE, NPC_STATES_FLU
 from gym_zgame.envs.enums.NPC_ACTIONS import NPC_ACTIONS
-from ConfigParser import SafeConfigParser
 
 
 class City:
@@ -53,8 +52,6 @@ class City:
         self.num_active = 0
         self.num_sickly = 0
         self.update_summary_stats()
-        self.parsed_weights = SafeConfigParser()
-        self.parsed_weights.read('config.txt')
 
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
@@ -249,7 +246,7 @@ class City:
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
 
-            for dep in nbh.deployments:
+            for dep in nbh.current_deployments:
 
                 weight_sum += int(self.DEP_FEAR_WEIGHTS.get(dep.name))
                 cost_sum += self.DEP_RESOURCE_COST.get(dep.name)
@@ -452,9 +449,9 @@ class City:
 
             # Update based on deployments
 
-            if DEPLOYMENTS.KILN_OVERSIGHT in nbh.deployments:
+            if DEPLOYMENTS.KILN_OVERSIGHT in nbh.current_deployments:
                 burial_prob = min(1.0, burial_prob * 1.5)
-            if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.deployments:
+            if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.current_deployments:
                 burial_prob = min(1.0, burial_prob * 5.0)
 
             # Universal Law: Burial
@@ -480,12 +477,12 @@ class City:
 
             # Update based on deployments
 
-            if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.deployments:
+            if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.current_deployments:
                 fumes_prob = min(1.0, fumes_prob * 10.0)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.deployments:
+            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
                 cough_prob = min(1.0, fumes_prob * 0.75)
                 fumes_prob = min(1.0, fumes_prob * 0.75)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.deployments:
+            if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.current_deployments:
                 cough_prob = min(1.0, fumes_prob * 0.25)
                 fumes_prob = min(1.0, fumes_prob * 0.25)
 
