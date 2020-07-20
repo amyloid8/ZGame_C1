@@ -5,6 +5,7 @@ import gym_zgame
 from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
 from GUI import *
+from GUI_2 import *
 
 
 class ZGame:
@@ -42,7 +43,7 @@ class ZGame:
         root.title("ZGAME")
         #root.geometry("270x250")
         #root.resizable(width=False,height=False)
-        app = GUI(self, root)
+        app = GUI_2(self, root)
         root.mainloop()
         print("HELLO WORLD")
 
