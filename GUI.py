@@ -18,76 +18,61 @@ class GUI(Frame):
         self.turn = zgame.turn
         self.max_turns = zgame.max_turns
         self.DATA_LOG_FILE_NAME = zgame.DATA_LOG_FILE_NAME
-
         self.grid()
         self.env.reset()
         self.create_widgets()
 
     def create_widgets(self):
         str = self.env.render(mode='human')
-
-
-        # Label(self, text = str).grid(row = 0, column = 0, columnspan = 4, sticky = W)
-        Label(self, text="", bg="blue", width=65).grid(row=19, column=0, columnspan=3, sticky=W)
-        Label(self, text="", bg="blue", width=65).grid(row=21, column=0, columnspan=3, sticky=W)
-        Label(self, text="", bg="blue", width=65).grid(row=23, column=0, columnspan=3, sticky=W)
-        Label(self, text="", bg="blue", width=65).grid(row=25, column=0, columnspan=3, sticky=W)
-
-        self.grid3by3()
-
-        Label(self, text="", bg="red", width=65).grid(row=0, column=0, columnspan=3, sticky=W)
-        Label(self, text="ZGAME Status", font='Chalkduster 50', justify=LEFT, width=1).grid(row=1, column=0,
-                                                                                            columnspan=3,
-                                                                                            sticky=E + S + W)
-        Label(self, text="", bg="red", width=65).grid(row=9, column=0, columnspan=3, sticky=S)
-
-        Label(self, text="Global Status", bg="pink", width=65).grid(row=10, column=0, columnspan=3, sticky=N)
-        Label(self, text="", bg="pink", width=65).grid(row=18, column=0, columnspan=3, sticky=N)
-
+        right = Frame(self, width=650, height=400, bg='blue')
+        right.grid(row=0, column=1, padx=10, pady=10)
+        #GLOBAL INFO
         str = ' Turn: {0} of {1}'.format(self.turn, self.max_turns) \
               + '\n Fear: {}'.format(self.fear) \
               + '\n Resources: {}'.format(self.resources)
-        Label(self, text=str, justify=LEFT).grid(row=11, column=0, sticky=W)
+        Label(right, text=str, justify=LEFT).grid(row=3, column=3, rowspan=3, columnspan=2)
 
         str = 'Turn Score: {0} (Total Score: {1})'.format(self.score, self.total_score) \
               + '\nLiving at Start: {}'.format(self.orig_alive) \
               + '\nDead at Start: {}'.format(self.orig_dead)
-        Label(self, text=str, justify=LEFT).grid(row=11, column=1, columnspan=3, sticky=W)
+        Label(right, text=str, justify=LEFT).grid(row=0, column=3, columnspan=2, rowspan=3)
 
-        Label(self, text=" ", bg="green", height=48).grid(row=0, column=3, rowspan=30, sticky=W)
+        Label(right, text="   ", bg="green", height=28).grid(row=0, column=0, rowspan=28, sticky=W)
+        Label(right, text=" ", bg="green", width=100).grid(row=0, column=0, columnspan=28,sticky=NW)
+        Label(right, text="Deployments").grid(row=1, column=1)
+        Label(right, text="Locations").grid(row=0, column=1)
         loc_str = ""
         for i in range(9):
             loc_str += "{0} - {1}\n".format(LOCATIONS(i).value, LOCATIONS(i).name)
 
-        Label(self, text=loc_str, justify=LEFT).grid(row=0, column=4, rowspan=30, sticky=W)
-
-        Label(self, text=" ", bg="green", height=48).grid(row=0, column=5, rowspan=30, sticky=W)
+        Label(right, text=loc_str, justify=LEFT).grid(row=1, column=1, rowspan=10, sticky=W, columnspan=2)
         dep_str = ""
         for i in range(25):
-            dep_str += "{0} - {1}\n".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
+            if i is 24:
+                dep_str += "{0} - {1}".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
+            else:
+                dep_str += "{0} - {1}\n".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
+        Label(right, text=dep_str, justify=LEFT).grid(row=3, column=1, rowspan=24, sticky=W, ipadx=0)
 
-        Label(self, text=dep_str, justify=LEFT).grid(row=0, column=6, rowspan=30, sticky=W)
 
-        Label(self, text=" ", bg="green", height=48).grid(row=0, column=7, rowspan=30, sticky=W)
+        Label(right, text="location 1").grid(row=14, column=1, columnspan=2, rowspan=2)
+        loc1 = Entry(right)
+        loc1.grid(row=14, column=3, columnspan=1, rowspan=2)
 
-        Label(self, text="location 1").grid(row=26, column=0, columnspan=1, sticky=W)
-        self.loc1 = Entry(self)
-        self.loc1.grid(row=26, column=1, columnspan=1, sticky=W)
+        Label(right, text="deployment 1").grid(row=16, column=1, columnspan=2, rowspan=2)
+        dep1 = Entry(right)
+        dep1.grid(row=16, column=3, columnspan=1, rowspan=2)
 
-        Label(self, text="deployment 1").grid(row=27, column=0, columnspan=1, sticky=W)
-        self.dep1 = Entry(self)
-        self.dep1.grid(row=27, column=1, columnspan=1, sticky=W)
+        Label(right, text="location 2").grid(row=18, column=1, columnspan=2, rowspan=2)
+        loc2 = Entry(right)
+        loc2.grid(row=18, column=3, columnspan=1, rowspan=2)
 
-        Label(self, text="location 2").grid(row=28, column=0, columnspan=1, sticky=W)
-        self.loc2 = Entry(self)
-        self.loc2.grid(row=28, column=1, columnspan=1, sticky=W)
+        Label(right, text="deployment 2").grid(row=20, column=1, columnspan=2, rowspan=2)
+        dep2 = Entry(right)
+        dep2.grid(row=20, column=3, columnspan=1, rowspan=2)
 
-        Label(self, text="deployment 2").grid(row=29, column=0, columnspan=1, sticky=W)
-        self.dep2 = Entry(self)
-        self.dep2.grid(row=29, column=1, columnspan=1, sticky=W)
-
-        Button(self, text="Next step", command=self.update).grid(row=26, column=2, rowspan=2, sticky=N + E + W + S)
-        Button(self, text="Quit", command=self.quit).grid(row=28, column=2, rowspan=2, sticky=N + E + W + S)
+        Button(right, text="Next step", command=self.update).grid(row=24, column=2, rowspan=2, sticky=N + E + W + S)
+        Button(right, text="Quit", command=self.quit).grid(row=24, column=4, rowspan=2, sticky=N + E + W + S)
 
     def grid3by3(self):
 
