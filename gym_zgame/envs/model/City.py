@@ -9,6 +9,7 @@ from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
 from gym_zgame.envs.enums.LEVELS import LEVELS
 from gym_zgame.envs.enums.NPC_STATES import NPC_STATES_DEAD, NPC_STATES_ZOMBIE, NPC_STATES_FLU
 from gym_zgame.envs.enums.NPC_ACTIONS import NPC_ACTIONS
+from ConfigParser import SafeConfigParser
 
 
 class City:
@@ -48,6 +49,8 @@ class City:
         self.num_active = 0
         self.num_sickly = 0
         self.update_summary_stats()
+        self.parsed_weights = SafeConfigParser()
+        self.parsed_weights.read('config.txt')
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
@@ -106,7 +109,6 @@ class City:
             dead_npcs.append(dead_npc)
         dead_loc.add_NPCs(dead_npcs)
         dead_loc.orig_dead += 10
-
         # Add 1 zombie in a random location
         zombie_loc = random.choice(self.neighborhoods)
         zombie_npc = NPC()
@@ -225,50 +227,18 @@ class City:
 
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
-            for dep in nbh.current_deployments:
-                # deployments not included do not have fear or resources costs
-                if dep is DEPLOYMENTS.QUARANTINE_FENCED:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.BITE_CENTER_AMPUTATE:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.Z_CURE_CENTER_FDA:
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.Z_CURE_CENTER_EXP:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.FLU_VACCINE_MAN:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.BROADCAST_DONT_PANIC:
-                    fear_cost_per_turn += -1
-                elif dep is DEPLOYMENTS.BROADCAST_CALL_TO_ARMS:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.SNIPER_TOWER_FREE:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.PHEROMONES_MEAT:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_ON:
-                    if nbh.num_active >= 5:
-                        resource_cost_per_turn -= 1
-                elif dep is DEPLOYMENTS.BSL4LAB_SAFETY_OFF:
-                    resource_cost_per_turn -= 2
-                elif dep is DEPLOYMENTS.RALLY_POINT_FULL:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.FIREBOMB_PRIMED:
-                    fear_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
-                    fear_cost_per_turn += 10
-                    resource_cost_per_turn += 1
-                elif dep is DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY:
-                    fear_cost_per_turn += 1
-                    resource_cost_per_turn += 1
+
+            for dep in nbh.deployments:
+                fear_cost_per_turn += self.parsed_weights.get('fear', dep.upper(), fallback=0)
+                resource_cost_per_turn += self.parsed_weights.get('resources', dep.upper(), fallback=0)
         self.delta_fear = fear_cost_per_turn
         self.delta_resources = resource_cost_per_turn
 
     def _update_global_states(self):
         self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
         self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
+        if self.fear < 0:
+            self.fear = 0
         if self.resources < 0:
             self.resources = 0
             self._destroy_upkeep_deployments()
@@ -332,7 +302,7 @@ class City:
 
     def _art_trans_flu_vaccine_free(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
-        vaccine_success = min(0, 0.2 - (0.01 * self.fear))
+        vaccine_success = max(0, 0.2 - (0.01 * self.fear))
         for npc in nbh.NPCs:
             if (npc.state_flu is not NPC_STATES_FLU.IMMUNE) and (npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE):
                 if random.random() <= vaccine_success:
@@ -417,10 +387,11 @@ class City:
             burial_prob = trans_probs.get('burial')
 
             # Update based on deployments
-            if DEPLOYMENTS.KILN_OVERSIGHT in nbh.current_deployments:
-                burial_prob = max(1.0, burial_prob * 1.5)
-            if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.current_deployments:
-                burial_prob = max(1.0, burial_prob * 5.0)
+
+            if DEPLOYMENTS.KILN_OVERSIGHT in nbh.deployments:
+                burial_prob = min(1.0, burial_prob * 1.5)
+            if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.deployments:
+                burial_prob = min(1.0, burial_prob * 5.0)
 
             # Universal Law: Burial
             for npc in nbh.NPCs:
@@ -429,6 +400,7 @@ class City:
                         npc.change_dead_state(NPC_STATES_DEAD.ASHEN)
 
     def _flu_transitions(self):
+        # TODO: turn into config.txt
         for nbh_index in range(len(self.neighborhoods)):
             # Get baselines
             nbh = self.neighborhoods[nbh_index]
@@ -443,14 +415,15 @@ class City:
             mutate_prob = trans_probs.get('mutate')
 
             # Update based on deployments
-            if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.current_deployments:
-                fumes_prob = max(1.0, fumes_prob * 10.0)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
-                cough_prob = max(1.0, fumes_prob * 0.75)
-                fumes_prob = max(1.0, fumes_prob * 0.75)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.current_deployments:
-                cough_prob = max(1.0, fumes_prob * 0.25)
-                fumes_prob = max(1.0, fumes_prob * 0.25)
+
+            if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.deployments:
+                fumes_prob = min(1.0, fumes_prob * 10.0)
+            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.deployments:
+                cough_prob = min(1.0, fumes_prob * 0.75)
+                fumes_prob = min(1.0, fumes_prob * 0.75)
+            if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.deployments:
+                cough_prob = min(1.0, fumes_prob * 0.25)
+                fumes_prob = min(1.0, fumes_prob * 0.25)
 
             # Flu Laws
             for npc in nbh.NPCs:
@@ -480,6 +453,7 @@ class City:
                         npc.change_flu_state(NPC_STATES_FLU.HEALTHY)
 
     def _zombie_transitions(self):
+        # TODO: turn into config.txt
         for nbh_index in range(len(self.neighborhoods)):
             # Get baselines
             nbh = self.neighborhoods[nbh_index]
@@ -560,6 +534,7 @@ class City:
                         npc.add_to_bag(npc_action)
 
     def adjust_bags_for_deployments(self):
+        # TODO: turn into config.txt
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
             if DEPLOYMENTS.QUARANTINE_OPEN in nbh.current_deployments:
@@ -726,7 +701,7 @@ class City:
         # Some NPCs want to stay here to keep from spreading the disease
         for npc in nbh.NPCs:
             # People who are sickly and active want to stay in place
-            if npc.sickly and npc.active:
+            if npc.sickly or npc.active:
                 for _ in range(9):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
 
