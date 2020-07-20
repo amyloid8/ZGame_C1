@@ -4,31 +4,29 @@ import warnings
 
 
 class LEVELS(IntEnum):
-    NONE = 0
-    FEW = 1
-    MANY = 2
+    level_Dict = {'NONE':0,'FEW':1,'MANY':2}
 
     @staticmethod
     def print():
-        for level in LEVELS:
-            print('{0} -> {1}'.format(level.value, level.name))
+        for key in level_Dict:
+            print('{0} -> {1}'.format(key, level_Dict[key]))
 
     @classmethod
     def get_random(cls):
-        return random.choice(list(LEVELS))
+        return random.choice(level_Dict.keys())
 
     @staticmethod
     def get_value_from_string(level):
-        if level.upper() == 'NONE' or level.upper() == 'FEW' or level.upper() == 'MANY':
-            exec('return LEVELS.' + level.upper() + ".value")
+        if level.upper() in level_Dict:
+            return level_Dict[level.upper()]
         else:
-            warnings.warn('Tried to convert string ({}) to LEVELS enum and failed; returned NONE'.format(level))
-            return LEVELS.STAY.value
+            warnings.warn('String ({}) not in level_Dict; returned STAY'.format(level))
+            return level_Dict['NONE']
 
     @staticmethod
     def get_name_from_string(level):
-        if level.upper() == 'NONE' or level.upper() == 'FEW' or level.upper() == 'MANY':
-            exec('return LEVELS.' + level.upper() + ".name")
+        if level.upper() in level_Dict:
+            return level.upper()
         else:
-            warnings.warn('Tried to convert string ({}) to LEVELS enum and failed; returned NONE'.format(level))
-            return LEVEL.S.NONE.name
+            warnings.warn('String ({}) not in level_Dict; returned STAY'.format(level))
+            return 'NONE'
