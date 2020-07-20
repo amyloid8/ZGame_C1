@@ -22,32 +22,16 @@ class NPC_ACTIONS(IntEnum):
 
     @staticmethod
     def get_value_from_string(action):
-        if action.upper() == 'STAY':
-            return NPC_ACTIONS.STAY.value
-        elif action.upper() == 'N':
-            return NPC_ACTIONS.N.value
-        elif action.upper() == 'S':
-            return NPC_ACTIONS.S.value
-        elif action.upper() == 'E':
-            return NPC_ACTIONS.E.value
-        elif action.upper() == 'W':
-            return NPC_ACTIONS.W.value
+        if action.upper() in [a.name for a in NPC_ACTIONS]:
+            exec('return NPC_ACTIONS.' + action.upper() + '.value')
         else:
             warnings.warn('Tried to convert string ({}) to NPC_ACTIONS enum and failed; returned STAY'.format(action))
             return NPC_ACTIONS.STAY.value
 
     @staticmethod
     def get_name_from_string(action):
-        if action.upper() == 'STAY':
-            return NPC_ACTIONS.STAY.name
-        elif action.upper() == 'N':
-            return NPC_ACTIONS.N.name
-        elif action.upper() == 'S':
-            return NPC_ACTIONS.S.name
-        elif action.upper() == 'E':
-            return NPC_ACTIONS.E.name
-        elif action.upper() == 'W':
-            return NPC_ACTIONS.W.name
+        if action.upper() in [a.name for a in NPC_ACTIONS]:
+            exec('return NPC_ACTIONS.' + action.upper() + '.name')
         else:
             warnings.warn('Tried to convert string ({}) to NPC_ACTIONS enum and failed; returned STAY'.format(action))
             return NPC_ACTIONS.STAY.name

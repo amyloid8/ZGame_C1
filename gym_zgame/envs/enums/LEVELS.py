@@ -19,24 +19,16 @@ class LEVELS(IntEnum):
 
     @staticmethod
     def get_value_from_string(level):
-        if level.upper() == 'NONE':
-            return LEVELS.NONE.value
-        elif level.upper() == 'FEW':
-            return LEVELS.FEW.value
-        elif level.upper() == 'MANY':
-            return LEVELS.MANY.value
+        if level.upper() in [l.name for l in LEVELS]:
+            exec('return LEVELS.' + level.upper() + '.value')
         else:
             warnings.warn('Tried to convert string ({}) to LEVELS enum and failed; returned NONE'.format(level))
             return LEVELS.STAY.value
 
     @staticmethod
     def get_name_from_string(level):
-        if level.upper() == 'NONE':
-            return LEVELS.NONE.name
-        elif level.upper() == 'FEW':
-            return LEVELS.FEW.name
-        elif level.upper() == 'MANY':
-            return LEVELS.MANY.name
+        if level.upper() in [l.name for l in LEVELS]:
+            exec('return LEVELS.' + level.upper() + '.name')
         else:
             warnings.warn('Tried to convert string ({}) to LEVELS enum and failed; returned NONE'.format(level))
             return LEVEL.S.NONE.name

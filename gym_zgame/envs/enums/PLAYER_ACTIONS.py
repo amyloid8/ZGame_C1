@@ -58,7 +58,6 @@ class DEPLOYMENTS(IntEnum):
             warnings.warn('Tried to convert string ({}) to DEPLOYMENTS enum and failed; returned NONE'.format(deployment))
             return DEPLOYMENTS.NONE.name
 
-
 class LOCATIONS(IntEnum):
     CENTER = 0
     N = 1
