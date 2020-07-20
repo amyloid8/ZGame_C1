@@ -5,13 +5,14 @@ import gym_zgame
 from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
 from tkinter import *
-import pyfiglet as pf
 import gym_zgame.envs.model.City
+
 
 class GUI(Frame):
 
     def __init__(self, zgame, master):
         super(GUI, self).__init__(master)
+        self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
         self.env = zgame.env
         self.GAME_ID = zgame.GAME_ID
         self.turn = zgame.turn
@@ -23,68 +24,54 @@ class GUI(Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
-        print('Starting new game with human play!')
         str = self.env.render(mode='human')
-        self.env.print_player_action_selections()
 
-        #Label(self, text = str).grid(row = 0, column = 0, columnspan = 4, sticky = W)
-
-        header = pf.figlet_format('ZGame Status')
-        fbuffer = '--------------------------------------------------------------------------------------------'
-        fbuffer2 = '********************************************************************************************'
-        ebuffer = '********************************************************************************************\n' \
-                  '--------------------------------------------------------------------------------------------'
-        line = "===================================================================="
-        Label(self, text = "", bg = "blue", width = 65).grid(row = 19, column = 0, columnspan = 3, sticky = W)
-        Label(self, text = "", bg = "blue", width = 65).grid(row = 21, column = 0, columnspan = 3, sticky = W)
-        Label(self, text = "", bg = "blue", width = 65).grid(row = 23, column = 0, columnspan = 3, sticky = W)
-        Label(self, text = "", bg = "blue", width = 65).grid(row = 25, column = 0, columnspan = 3, sticky = W)
+        # Label(self, text = str).grid(row = 0, column = 0, columnspan = 4, sticky = W)
+        Label(self, text="", bg="blue", width=65).grid(row=19, column=0, columnspan=3, sticky=W)
+        Label(self, text="", bg="blue", width=65).grid(row=21, column=0, columnspan=3, sticky=W)
+        Label(self, text="", bg="blue", width=65).grid(row=23, column=0, columnspan=3, sticky=W)
+        Label(self, text="", bg="blue", width=65).grid(row=25, column=0, columnspan=3, sticky=W)
 
         self.grid3by3()
 
+        Label(self, text="", bg="red", width=65).grid(row=0, column=0, columnspan=3, sticky=W)
+        Label(self, text="ZGAME Status", font='Chalkduster 50', justify=LEFT, width=1).grid(row=1, column=0,
+                                                                                            columnspan=3,
+                                                                                            sticky=E + S + W)
+        Label(self, text="", bg="red", width=65).grid(row=9, column=0, columnspan=3, sticky=S)
 
-        Label(self, text = "", bg = "red", width = 65).grid(row = 0, column = 0, columnspan = 3, sticky = W)
-        Label(self, text = "ZGAME Status", font = 'Chalkduster 50', justify = LEFT, width = 1).grid(row = 1, column = 0, columnspan = 3, sticky = E+S+W)
-        Label(self, text = "", bg = "red", width = 65).grid(row =9, column = 0, columnspan = 3, sticky = S)
+        Label(self, text="Global Status", bg="pink", width=65).grid(row=10, column=0, columnspan=3, sticky=N)
+        Label(self, text="", bg="pink", width=65).grid(row=18, column=0, columnspan=3, sticky=N)
 
-        Label(self, text = "Global Status", bg = "pink", width = 65).grid(row = 10, column = 0, columnspan = 3, sticky = N)
-        Label(self, text = "", bg = "pink", width = 65).grid(row = 18, column = 0, columnspan = 3, sticky = N)
-
-
-        str = ' Turn: {0} of {1}'.format(self.turn, self.max_turns)\
-              + '\n Fear: {}'.format(self.fear)\
+        str = ' Turn: {0} of {1}'.format(self.turn, self.max_turns) \
+              + '\n Fear: {}'.format(self.fear) \
               + '\n Resources: {}'.format(self.resources)
-        Label(self, text = str, justify = LEFT).grid(row = 11, column = 0, sticky = W)
+        Label(self, text=str, justify=LEFT).grid(row=11, column=0, sticky=W)
 
-        str =  'Turn Score: {0} (Total Score: {1})'.format(self.score, self.total_score)\
-               + '\nLiving at Start: {}'.format(self.orig_alive)\
-               + '\nDead at Start: {}'.format(self.orig_dead)
-        Label(self, text = str, justify = LEFT).grid(row = 11, column = 1,columnspan = 3, sticky = W)
+        str = 'Turn Score: {0} (Total Score: {1})'.format(self.score, self.total_score) \
+              + '\nLiving at Start: {}'.format(self.orig_alive) \
+              + '\nDead at Start: {}'.format(self.orig_dead)
+        Label(self, text=str, justify=LEFT).grid(row=11, column=1, columnspan=3, sticky=W)
 
-        Label(self, text = " ",bg="green", height = 48).grid(row = 0, column = 3, rowspan = 30, sticky = W)
+        Label(self, text=" ", bg="green", height=48).grid(row=0, column=3, rowspan=30, sticky=W)
         loc_str = ""
         for i in range(9):
-            loc_str += "{0} - {1}\n".format(LOCATIONS(i).value,LOCATIONS(i).name)
+            loc_str += "{0} - {1}\n".format(LOCATIONS(i).value, LOCATIONS(i).name)
 
-        Label(self, text = loc_str, justify = LEFT).grid(row = 0, column = 4, rowspan = 30, sticky = W)
+        Label(self, text=loc_str, justify=LEFT).grid(row=0, column=4, rowspan=30, sticky=W)
 
-        Label(self, text = " ",bg="green", height = 48).grid(row = 0, column = 5, rowspan = 30, sticky = W)
+        Label(self, text=" ", bg="green", height=48).grid(row=0, column=5, rowspan=30, sticky=W)
         dep_str = ""
         for i in range(25):
-            dep_str += "{0} - {1}\n".format(DEPLOYMENTS(i).value,DEPLOYMENTS(i).name)
+            dep_str += "{0} - {1}\n".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
 
-        Label(self, text = dep_str, justify = LEFT).grid(row = 0, column = 6, rowspan = 30, sticky = W)
+        Label(self, text=dep_str, justify=LEFT).grid(row=0, column=6, rowspan=30, sticky=W)
 
-        Label(self, text = " ",bg="green", height = 48).grid(row = 0, column = 7, rowspan = 30, sticky = W)
+        Label(self, text=" ", bg="green", height=48).grid(row=0, column=7, rowspan=30, sticky=W)
 
-
-
-        print(self.neighborhoods)
-
-        Label(self, text = "location 1").grid(row = 26, column = 0, columnspan = 1, sticky = W)
+        Label(self, text="location 1").grid(row=26, column=0, columnspan=1, sticky=W)
         self.loc1 = Entry(self)
-        self.loc1.grid(row=26, column = 1, columnspan = 1, sticky = W)
+        self.loc1.grid(row=26, column=1, columnspan=1, sticky=W)
 
         Label(self, text="deployment 1").grid(row=27, column=0, columnspan=1, sticky=W)
         self.dep1 = Entry(self)
@@ -98,8 +85,8 @@ class GUI(Frame):
         self.dep2 = Entry(self)
         self.dep2.grid(row=29, column=1, columnspan=1, sticky=W)
 
-        Button(self, text = "Next step", command = self.update).grid(row = 26, column = 2, rowspan = 2, sticky = N+E+W+S)
-        Button(self, text = "Quit", command = self.quit).grid(row = 28, column = 2, rowspan = 2, sticky = N+E+W+S)
+        Button(self, text="Next step", command=self.update).grid(row=26, column=2, rowspan=2, sticky=N + E + W + S)
+        Button(self, text="Quit", command=self.quit).grid(row=28, column=2, rowspan=2, sticky=N + E + W + S)
 
     def grid3by3(self):
 
@@ -124,14 +111,14 @@ class GUI(Frame):
             nbh_sw = nbh if nbh.location is LOCATIONS.SW else nbh_sw
 
         Label(self,
-              text = "Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5}"\
+              text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5}" \
               .format(self.env.city.mask_visible_data(nbh_nw.num_active).name,
                       self.env.city.mask_visible_data(nbh_nw.num_sickly).name,
                       self.env.city.mask_visible_data(nbh_nw.num_zombie).name,
                       self.env.city.mask_visible_data(nbh_nw.num_dead).name,
                       nbh_nw.orig_alive,
-                      nbh_nw.orig_dead), justify = LEFT
-              ).grid(row = 20, column = 0, sticky = W)
+                      nbh_nw.orig_dead), justify=LEFT
+              ).grid(row=20, column=0, sticky=W)
 
         Label(self,
               text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5}" \
@@ -140,18 +127,18 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_n.num_zombie).name,
                       self.env.city.mask_visible_data(nbh_n.num_dead).name,
                       nbh_n.orig_alive,
-                      nbh_n.orig_dead), justify = LEFT
+                      nbh_n.orig_dead), justify=LEFT
               ).grid(row=20, column=1, sticky=W)
 
         Label(self,
-              text = "Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5}" \
-            .format(self.env.city.mask_visible_data(nbh_ne.num_active).name,
-                    self.env.city.mask_visible_data(nbh_ne.num_sickly).name,
-                    self.env.city.mask_visible_data(nbh_ne.num_zombie).name,
-                    self.env.city.mask_visible_data(nbh_ne.num_dead).name,
-                    nbh_ne.orig_alive,
-                    nbh_ne.orig_dead), justify = LEFT
-        ).grid(row=20, column=2, sticky=W)
+              text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5}" \
+              .format(self.env.city.mask_visible_data(nbh_ne.num_active).name,
+                      self.env.city.mask_visible_data(nbh_ne.num_sickly).name,
+                      self.env.city.mask_visible_data(nbh_ne.num_zombie).name,
+                      self.env.city.mask_visible_data(nbh_ne.num_dead).name,
+                      nbh_ne.orig_alive,
+                      nbh_ne.orig_dead), justify=LEFT
+              ).grid(row=20, column=2, sticky=W)
 
         Label(self,
               text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5}" \
@@ -215,9 +202,6 @@ class GUI(Frame):
 
     def quit(self):
         self.winfo_children()[0].quit()
-        # for widget in self.winfo_children():
-        #     widget.quit()
-        #Label(self, text = "Please exit the game manually").grid(row = 0, column = 0, sticky = W)
 
     def update(self):
         # self.env.print_player_action_selections()
