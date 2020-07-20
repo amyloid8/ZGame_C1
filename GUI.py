@@ -12,8 +12,8 @@ class GUI(Frame):
 
     def __init__(self, zgame, master):
         super(GUI, self).__init__(master)
-        self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
         self.env = zgame.env
+        self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
         self.GAME_ID = zgame.GAME_ID
         self.turn = zgame.turn
         self.max_turns = zgame.max_turns
@@ -25,6 +25,7 @@ class GUI(Frame):
 
     def create_widgets(self):
         str = self.env.render(mode='human')
+
 
         # Label(self, text = str).grid(row = 0, column = 0, columnspan = 4, sticky = W)
         Label(self, text="", bg="blue", width=65).grid(row=19, column=0, columnspan=3, sticky=W)
@@ -199,6 +200,9 @@ class GUI(Frame):
                       nbh_se.orig_alive,
                       nbh_se.orig_dead), justify=LEFT
               ).grid(row=24, column=2, sticky=W)
+
+        # Button(self, text="Quit", command=self.quit).place(relx = 0.5, rely = 0.5)
+
 
     def quit(self):
         self.winfo_children()[0].quit()

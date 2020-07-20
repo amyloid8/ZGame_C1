@@ -41,6 +41,7 @@ class ZGame:
         root = Tk()
         root.title("ZGAME")
         #root.geometry("270x250")
+        #root.resizable(width=False,height=False)
         app = GUI(self, root)
         root.mainloop()
         print("HELLO WORLD")
