@@ -22,7 +22,4 @@ if __name__ == '__main__':
     data_log_file = args.outfile
     os.system('mode con: cols=125 lines=62')
     zgame_env = ZGame(data_log_file)
-    print('\n')
-    print(PBack.red + 'Error: An Untraceable SuperBug has spawned in your program. Have fun :)')
-    hehehe
     zgame_env.run()

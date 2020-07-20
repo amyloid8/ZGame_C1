@@ -246,7 +246,7 @@ class City:
         cost_sum = 0
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
-            for dep in nbh.deployments:
+            for dep in nbh.current_deployments:
                 weight_sum += int(self.DEP_FEAR_WEIGHTS.get(dep.name))
                 cost_sum += self.DEP_RESOURCE_COST.get(dep.name)
         # IMPORTANT: these sums add up the factors of ALL deployments in the nbh, not only the new deployments.
