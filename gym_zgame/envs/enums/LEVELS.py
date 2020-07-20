@@ -31,4 +31,4 @@ class LEVELS(IntEnum):
             exec('return LEVELS.' + level.upper() + ".name")
         else:
             warnings.warn('Tried to convert string ({}) to LEVELS enum and failed; returned NONE'.format(level))
-            return LEVELS.STAY.name
+            return LEVEL.S.NONE.name
