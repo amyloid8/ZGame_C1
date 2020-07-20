@@ -22,7 +22,7 @@ class City:
         self._init_neighborhoods(loc_npc_range)
         self._init_neighborhood_threats()
         self.fear = 5
-        self.resources = 10
+        self.resources = 20
         self.delta_fear = 0
         self.delta_resources = 0
         self.score = 0
@@ -300,10 +300,8 @@ class City:
                 #     resource_cost_per_turn += 1
 
     def _update_global_states(self):
-        # self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
-        self.resources = self.delta_resources  # update resource cost from deployments (ALL deployments)
-        # self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
-        self.fear = self.delta_fear  # update fear from deployments (ALL deployments)
+        self.resources += self.delta_resources  # update resource cost from deployments (ALL deployments)
+        self.fear += self.delta_fear  # update fear from deployments (ALL deployments)
         if self.fear < 0:
             self.fear = 0
         if self.resources < 0:

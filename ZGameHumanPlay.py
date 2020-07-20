@@ -58,13 +58,15 @@ class ZGame:
                                                      deployment_1=DEPLOYMENTS(int(deployment_1)),
                                                      location_2=LOCATIONS(int(location_2)),
                                                      deployment_2=DEPLOYMENTS(int(deployment_2)))
-
             except:
                 print('>>> Input error. Try again.')
                 i -= 1
                 continue
             else:
                 print('>>> Input success.')
+                # this is for cases when the player orders a deployment, but doesn't have
+                # enough resources. They will only have wasted an action, but the action will
+                # be valid and the game will continue.
                 dep_name_1 = ''
                 dep_name_2 = ''
                 for dep in DEPLOYMENTS:
