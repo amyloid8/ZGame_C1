@@ -24,55 +24,55 @@ class GUI(Frame):
 
     def create_widgets(self):
         str = self.env.render(mode='human')
-        right = Frame(self, width=650, height=400, bg='blue')
-        right.grid(row=0, column=1, padx=10, pady=10)
+        right = Frame(self, bg='#86b8b0',padx=10,pady=10)
+        right.grid(row=0, column=1)
         #GLOBAL INFO
         str = ' Turn: {0} of {1}'.format(self.turn, self.max_turns) \
               + '\n Fear: {}'.format(self.fear) \
               + '\n Resources: {}'.format(self.resources)
-        Label(right, text=str, justify=LEFT).grid(row=3, column=3, rowspan=3, columnspan=2)
+        Label(right, text=str, justify=LEFT).grid(row=0, column=3, columnspan=2, rowspan=6,padx=10,pady=10)
 
         str = 'Turn Score: {0} (Total Score: {1})'.format(self.score, self.total_score) \
               + '\nLiving at Start: {}'.format(self.orig_alive) \
               + '\nDead at Start: {}'.format(self.orig_dead)
-        Label(right, text=str, justify=LEFT).grid(row=0, column=3, columnspan=2, rowspan=3)
-
-        Label(right, text="   ", bg="green", height=28).grid(row=0, column=0, rowspan=28, sticky=W)
-        Label(right, text=" ", bg="green", width=100).grid(row=0, column=0, columnspan=28,sticky=NW)
-        Label(right, text="Deployments").grid(row=1, column=1)
-        Label(right, text="Locations").grid(row=0, column=1)
+        Label(right, text=str, justify=LEFT).grid(row=6, column=3, rowspan=6, columnspan=2,padx=10,pady=10)
+        Label(right, text="Deployments", bg='#e32770').grid(row=0, column=0,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Locations", bg='#e32770').grid(row=0, column=1, columnspan=2,padx=10,pady=10, ipadx=5,ipady=5)
         loc_str = ""
         for i in range(9):
-            loc_str += "{0} - {1}\n".format(LOCATIONS(i).value, LOCATIONS(i).name)
+            if i  is 8:
+                loc_str += "{0} - {1}".format(LOCATIONS(i).value, LOCATIONS(i).name)
+            else:
+                loc_str += "{0} - {1}\n".format(LOCATIONS(i).value, LOCATIONS(i).name)
 
-        Label(right, text=loc_str, justify=LEFT).grid(row=1, column=1, rowspan=10, sticky=W, columnspan=2)
+        Label(right, text=loc_str, justify=LEFT,bg='#dfcec2').grid(row=1, column=1, rowspan=10, columnspan=2,padx=10,pady=10, ipadx=5,ipady=5)
         dep_str = ""
         for i in range(25):
             if i is 24:
                 dep_str += "{0} - {1}".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
             else:
                 dep_str += "{0} - {1}\n".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
-        Label(right, text=dep_str, justify=LEFT).grid(row=3, column=1, rowspan=24, sticky=W, ipadx=0)
+        Label(right, text=dep_str, justify=LEFT,bg='#dfcec2').grid(row=1, column=0, rowspan=24, padx=10,pady=10, ipadx=5,ipady=5)
 
 
-        Label(right, text="location 1").grid(row=14, column=1, columnspan=2, rowspan=2)
+        Label(right, text="Location 1").grid(row=14, column=1, columnspan=2, rowspan=2,padx=10,pady=10)
         loc1 = Entry(right)
-        loc1.grid(row=14, column=3, columnspan=1, rowspan=2)
+        loc1.grid(row=14, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Label(right, text="deployment 1").grid(row=16, column=1, columnspan=2, rowspan=2)
+        Label(right, text="Deployment 1").grid(row=16, column=1, columnspan=2, rowspan=2,padx=10,pady=10)
         dep1 = Entry(right)
-        dep1.grid(row=16, column=3, columnspan=1, rowspan=2)
+        dep1.grid(row=16, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Label(right, text="location 2").grid(row=18, column=1, columnspan=2, rowspan=2)
+        Label(right, text="Location 2").grid(row=18, column=1, columnspan=2, rowspan=2,padx=10,pady=10)
         loc2 = Entry(right)
-        loc2.grid(row=18, column=3, columnspan=1, rowspan=2)
+        loc2.grid(row=18, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Label(right, text="deployment 2").grid(row=20, column=1, columnspan=2, rowspan=2)
+        Label(right, text="Deployment 2").grid(row=20, column=1, columnspan=2, rowspan=2,padx=10,pady=10)
         dep2 = Entry(right)
-        dep2.grid(row=20, column=3, columnspan=1, rowspan=2)
+        dep2.grid(row=20, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Button(right, text="Next step", command=self.update).grid(row=24, column=2, rowspan=2, sticky=N + E + W + S)
-        Button(right, text="Quit", command=self.quit).grid(row=24, column=4, rowspan=2, sticky=N + E + W + S)
+        Button(right, text="Next step", command=self.update).grid(row=24, column=1, columnspan=2,rowspan=2,padx=10,pady=10)
+        Button(right, text="Quit", command=self.quit).grid(row=24, column=3, columnspan=2,rowspan=2,padx=10,pady=10)
 
     def grid3by3(self):
 
