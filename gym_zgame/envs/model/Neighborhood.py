@@ -100,6 +100,14 @@ class Neighborhood:
 
     def add_deployments(self, deployments):
         self.deployments.extend(deployments)
+    
+    def remove_deployment(self, deployment):
+        self.deployments.remove(deployment)
+    
+    def remove_deployments(self, deployments):
+        for d in deployments:
+            if d in self.deployments:
+                self.deployments.remove(d)
 
     def destroy_deployments_by_type(self, dep_types):
         updated_deps = [dep for dep in self.deployments if dep not in dep_types]
