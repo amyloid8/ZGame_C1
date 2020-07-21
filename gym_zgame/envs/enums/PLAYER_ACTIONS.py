@@ -34,8 +34,7 @@ class DEPLOYMENTS(IntEnum):
     TESTING_CENTER_MAN = 26
     SUPPLY_DEPOT = 27
     FACTORY = 28
-    DONATION_CENTER = 29
-    VOLUNTEER_RECRUITMENT = 30
+    VOLUNTEER_RECRUITMENT = 29
 
     @staticmethod
     def print():

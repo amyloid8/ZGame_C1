@@ -22,7 +22,7 @@ class City:
         self._init_neighborhoods(loc_npc_range)
         self._init_neighborhood_threats()
         self.fear = 5
-        self.resources = 10
+        self.resources = 20
         self.delta_fear = 0
         self.delta_resources = 0
         self.score = 0
@@ -34,7 +34,8 @@ class City:
         # CONSTANTS
         self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
                             DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
-                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY]
+                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY, DEPLOYMENTS.TESTING_CENTER_MAN,
+                            DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
 
         # Keep summary stats up to date for ease
         self.num_npcs = 0
@@ -71,6 +72,9 @@ class City:
         self.DEP_FEAR_WEIGHTS.update(data["fear_config"])
         self.DEP_RESOURCE_COST.update(data["resource_config"])
         self.SCORE_WEIGHTS.update(data["score_config"])
+
+    def get_cost_dict(self):
+        return self.DEP_RESOURCE_COST
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
@@ -140,6 +144,9 @@ class City:
             flu_npc.change_flu_state(NPC_STATES_FLU.INCUBATING)
             nbh.add_NPC(flu_npc)
 
+    def get_resources(self):
+        return self.resources
+
     def _get_original_state_metrics(self):
         og_alive = 0
         og_dead = 0
@@ -196,6 +203,9 @@ class City:
         self.num_moving = num_moving
         self.num_active = num_active
         self.num_sickly = num_sickly
+
+        for nbh in self.neighborhoods:
+            nbh.density = self.num_moving/self.num_npcs
 
     def do_turn(self, actions):
         loc_1 = actions[0][0]  # Unpack for readability
@@ -292,10 +302,8 @@ class City:
                 #     resource_cost_per_turn += 1
 
     def _update_global_states(self):
-        # self.resources -= self.delta_resources  # remove upkeep resources (includes new deployments)
-        self.resources = self.delta_resources  # update resource cost from deployments (ALL deployments)
-        # self.fear += self.delta_fear  # increase fear from deployments (includes new deployments)
-        self.fear = self.delta_fear  # update fear from deployments (ALL deployments)
+        self.resources += self.delta_resources  # update resource cost from deployments (ALL deployments)
+        self.fear += self.delta_fear  # update fear from deployments (ALL deployments)
         if self.fear < 0:
             self.fear = 0
         if self.resources < 0:
@@ -778,7 +786,7 @@ class City:
             for npc in nbh.NPCs:
                 if npc.state_dead is NPC_STATES_DEAD.ALIVE and npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE:
                     action = npc.selection()  # Selects a random action from the npc bag of actions
-                    new_location = self._get_new_location(nbh.location, action)
+                    new_location = self._get_new_location(nbh, action)
                     if new_location is None:  # handles movement out of the city
                         new_location = nbh.location  # if movement out of the city, stay in place
                     # Find index of new neighborhood
@@ -805,7 +813,7 @@ class City:
             # Pick a random zombie, this zombie will control the movement of all zombies!
             rand_zombie = random.choice(zombies_to_move)
             action = rand_zombie.selection()  # Selects a random action from the npc bag of actions
-            new_location = self._get_new_location(nbh.location, action)
+            new_location = self._get_new_location(nbh, action)
             if new_location is None:  # handles movement out of the city
                 new_location = nbh.location  # if movement out of the city, stay in place
             # Find index of new neighborhood
@@ -1060,107 +1068,16 @@ class City:
 
     @staticmethod
     def _get_new_location(old_location, npc_action):
-        if old_location is LOCATIONS.CENTER:
-            if npc_action is NPC_ACTIONS.STAY:
-                return LOCATIONS.CENTER
-            if npc_action is NPC_ACTIONS.N:
-                return LOCATIONS.N
-            if npc_action is NPC_ACTIONS.S:
-                return LOCATIONS.S
-            if npc_action is NPC_ACTIONS.E:
-                return LOCATIONS.E
-            if npc_action is NPC_ACTIONS.W:
-                return LOCATIONS.W
-        elif old_location is LOCATIONS.N:
-            if npc_action is NPC_ACTIONS.STAY:
-                return LOCATIONS.N
-            if npc_action is NPC_ACTIONS.N:
-                return None
-            if npc_action is NPC_ACTIONS.S:
-                return LOCATIONS.CENTER
-            if npc_action is NPC_ACTIONS.E:
-                return LOCATIONS.NE
-            if npc_action is NPC_ACTIONS.W:
-                return LOCATIONS.NW
-        elif old_location is LOCATIONS.S:
-            if npc_action is NPC_ACTIONS.STAY:
-                return LOCATIONS.S
-            if npc_action is NPC_ACTIONS.N:
-                return LOCATIONS.CENTER
-            if npc_action is NPC_ACTIONS.S:
-                return None
-            if npc_action is NPC_ACTIONS.E:
-                return LOCATIONS.SE
-            if npc_action is NPC_ACTIONS.W:
-                return LOCATIONS.SW
-        elif old_location is LOCATIONS.E:
-            if npc_action is NPC_ACTIONS.STAY:
-                return LOCATIONS.E
-            if npc_action is NPC_ACTIONS.N:
-                return LOCATIONS.NE
-            if npc_action is NPC_ACTIONS.S:
-                return LOCATIONS.SE
-            if npc_action is NPC_ACTIONS.E:
-                return None
-            if npc_action is NPC_ACTIONS.W:
-                return LOCATIONS.CENTER
-        elif old_location is LOCATIONS.W:
-            if npc_action is NPC_ACTIONS.STAY:
-                return LOCATIONS.W
-            if npc_action is NPC_ACTIONS.N:
-                return LOCATIONS.NW
-            if npc_action is NPC_ACTIONS.S:
-                return LOCATIONS.SW
-            if npc_action is NPC_ACTIONS.E:
-                return LOCATIONS.CENTER
-            if npc_action is NPC_ACTIONS.W:
-                return None
-        elif old_location is LOCATIONS.NE:
-            if npc_action is NPC_ACTIONS.STAY:
-                return LOCATIONS.NE
-            if npc_action is NPC_ACTIONS.N:
-                return None
-            if npc_action is NPC_ACTIONS.S:
-                return LOCATIONS.E
-            if npc_action is NPC_ACTIONS.E:
-                return None
-            if npc_action is NPC_ACTIONS.W:
-                return LOCATIONS.N
-        elif old_location is LOCATIONS.NW:
-            if npc_action is NPC_ACTIONS.STAY:
-                return LOCATIONS.NW
-            if npc_action is NPC_ACTIONS.N:
-                return None
-            if npc_action is NPC_ACTIONS.S:
-                return LOCATIONS.W
-            if npc_action is NPC_ACTIONS.E:
-                return LOCATIONS.N
-            if npc_action is NPC_ACTIONS.W:
-                return None
-        elif old_location is LOCATIONS.SE:
-            if npc_action is NPC_ACTIONS.STAY:
-                return LOCATIONS.SE
-            if npc_action is NPC_ACTIONS.N:
-                return LOCATIONS.E
-            if npc_action is NPC_ACTIONS.S:
-                return None
-            if npc_action is NPC_ACTIONS.E:
-                return None
-            if npc_action is NPC_ACTIONS.W:
-                return LOCATIONS.S
-        elif old_location is LOCATIONS.SW:
-            if npc_action is NPC_ACTIONS.STAY:
-                return LOCATIONS.SW
-            if npc_action is NPC_ACTIONS.N:
-                return LOCATIONS.W
-            if npc_action is NPC_ACTIONS.S:
-                return None
-            if npc_action is NPC_ACTIONS.E:
-                return LOCATIONS.S
-            if npc_action is NPC_ACTIONS.W:
-                return None
-        else:
+        if old_location.location not in LOCATIONS.__members__.values():
             raise ValueError('Bad location passed into new location mapping.')
+        for member in NPC_ACTIONS.__members__.values():
+            if member in old_location.adj_locations.values():
+                print("hi")
+                return list(old_location.adj_locations.keys())[list(old_location.adj_locations.values()).index(member)]
+            elif member is NPC_ACTIONS.STAY:
+                return old_location.location
+            else:
+                return None
 
 
 if __name__ == '__main__':
