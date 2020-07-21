@@ -5,6 +5,7 @@ import gym_zgame
 from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
 from GUI import *
+from gym_zgame.envs.model.City import City
 
 
 class ZGame:
@@ -61,6 +62,7 @@ class ZGame:
             location_2 = input()
             print('Input Action - Deployment 2:')
             deployment_2 = input()
+
             try:
                 actions = self.env.encode_raw_action(location_1=LOCATIONS(int(location_1)),
                                                      deployment_1=DEPLOYMENTS(int(deployment_1)),
@@ -72,6 +74,28 @@ class ZGame:
                 continue
             else:
                 print('>>> Input success.')
+                # this is for cases when the player orders a deployment, but doesn't have
+                # enough resources. They will only have wasted an action, but the action will
+                # be valid and the game will continue.
+                dep_name_1 = ''
+                dep_name_2 = ''
+                for dep in DEPLOYMENTS:
+                    if int(deployment_1) == dep.value:
+                        dep_name_1 = dep.name
+                    if int(deployment_2) == dep.value:
+                        dep_name_2 = dep.name
+                costs = self.env.city.get_cost_dict()
+                canceled_dep = ''
+                hasMoney = True
+                if costs[dep_name_1] > self.env.city.get_resources():
+                    canceled_dep += dep_name_1 + ' '
+                    hasMoney = False
+                if costs[dep_name_2] > self.env.city.get_resources():
+                    canceled_dep += dep_name_2
+                    hasMoney = False
+                if hasMoney == False:
+                    print('>>> Out of resources. Wasted deployment(s): ' + canceled_dep)
+
             observation, reward, done, info = self.env.step(actions)
             print(info)
             self.env.render(mode='human')
