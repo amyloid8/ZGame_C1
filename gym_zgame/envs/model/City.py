@@ -178,10 +178,12 @@ class City:
         self.num_sickly = num_sickly
 
     def do_turn(self, actions):
-        loc_1 = actions[0][0]  # Unpack for readability
-        dep_1 = actions[0][1]  # Unpack for readability
-        loc_2 = actions[1][0]  # Unpack for readability
-        dep_2 = actions[1][1]  # Unpack for readability
+        add_1 = actions[0][0]
+        loc_1 = actions[0][1]  # Unpack for readability
+        dep_1 = actions[0][2]  # Unpack for readability
+        add_2 = actions[1][0]
+        loc_2 = actions[1][1]  # Unpack for readability
+        dep_2 = actions[1][2]  # Unpack for readability
         nbh_1_index = 0  # Get location indexes for easier handling
         nbh_2_index = 0  # Get location indexes for easier handling
         for i in range(len(self.neighborhoods)):
@@ -191,7 +193,8 @@ class City:
             if loc_2 is nbh.location:
                 nbh_2_index = i
         # Process turn
-        self._add_buildings_to_locations(nbh_1_index, dep_1, nbh_2_index, dep_2)
+        self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 1 else self._remove_building_from_location(nbh_1_index, dep_1)
+        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 1 else self._remove_building_from_location(nbh_2_index, dep_2)
         self.update_states()
         self.reset_bags()
         self.adjust_bags_for_deployments()
@@ -207,10 +210,12 @@ class City:
         self.turn += 1
         return score, done
 
-    def _add_buildings_to_locations(self, nbh_1_index, dep_1, nbh_2_index, dep_2):
+    def _add_building_to_location(self, nbh_index, dep):
         # Update the list of deployments at that location
-        self.neighborhoods[nbh_1_index].add_deployment(dep_1)
-        self.neighborhoods[nbh_2_index].add_deployment(dep_2)
+        self.neighborhoods[nbh_index].add_deployment(dep)
+
+    def _remove_building_from_location(self, nbh_index, dep):
+        self.neighborhoods[nbh_index].remove_deployment(dep)
 
     def update_states(self):
         self._update_trackers()
