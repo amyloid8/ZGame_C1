@@ -204,6 +204,9 @@ class City:
         self.num_active = num_active
         self.num_sickly = num_sickly
 
+        for nbh in self.neighborhoods:
+            nbh.density = self.num_moving/self.num_npcs
+
     def do_turn(self, actions):
         loc_1 = actions[0][0]  # Unpack for readability
         dep_1 = actions[0][1]  # Unpack for readability
