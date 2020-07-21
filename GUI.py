@@ -30,12 +30,12 @@ class GUI(Frame):
         str = ' Turn: {0} of {1}'.format(self.turn, self.max_turns) \
               + '\n Fear: {}'.format(self.fear) \
               + '\n Resources: {}'.format(self.resources)
-        Label(right, text=str, justify=LEFT).grid(row=0, column=3, columnspan=2, rowspan=6,padx=10,pady=10)
+        Label(right, text=str, justify=LEFT, bg='#b886af').grid(row=3, column=3, columnspan=2, rowspan=3,padx=10,pady=10, ipadx=5,ipady=5)
 
         str = 'Turn Score: {0} (Total Score: {1})'.format(self.score, self.total_score) \
               + '\nLiving at Start: {}'.format(self.orig_alive) \
               + '\nDead at Start: {}'.format(self.orig_dead)
-        Label(right, text=str, justify=LEFT).grid(row=6, column=3, rowspan=6, columnspan=2,padx=10,pady=10)
+        Label(right, text=str, justify=LEFT, bg='#b886af').grid(row=6, column=3, rowspan=3, columnspan=2,padx=10,pady=10, ipadx=5,ipady=5)
         Label(right, text="Deployments", bg='#e32770').grid(row=0, column=0,padx=10,pady=10, ipadx=5,ipady=5)
         Label(right, text="Locations", bg='#e32770').grid(row=0, column=1, columnspan=2,padx=10,pady=10, ipadx=5,ipady=5)
         loc_str = ""
@@ -55,24 +55,24 @@ class GUI(Frame):
         Label(right, text=dep_str, justify=LEFT,bg='#dfcec2').grid(row=1, column=0, rowspan=24, padx=10,pady=10, ipadx=5,ipady=5)
 
 
-        Label(right, text="Location 1").grid(row=14, column=1, columnspan=2, rowspan=2,padx=10,pady=10)
-        loc1 = Entry(right)
+        Label(right, text="Location 1", bg='#5e817b').grid(row=14, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        loc1 = Entry(right, bg='#5e817b')
         loc1.grid(row=14, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Label(right, text="Deployment 1").grid(row=16, column=1, columnspan=2, rowspan=2,padx=10,pady=10)
-        dep1 = Entry(right)
+        Label(right, text="Deployment 1", bg='#5e817b').grid(row=16, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        dep1 = Entry(right, bg='#5e817b')
         dep1.grid(row=16, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Label(right, text="Location 2").grid(row=18, column=1, columnspan=2, rowspan=2,padx=10,pady=10)
-        loc2 = Entry(right)
+        Label(right, text="Location 2", bg='#5e817b').grid(row=18, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        loc2 = Entry(right, bg='#5e817b')
         loc2.grid(row=18, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Label(right, text="Deployment 2").grid(row=20, column=1, columnspan=2, rowspan=2,padx=10,pady=10)
-        dep2 = Entry(right)
+        Label(right, text="Deployment 2", bg='#5e817b').grid(row=20, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        dep2 = Entry(right, bg='#5e817b')
         dep2.grid(row=20, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Button(right, text="Next step", command=self.update).grid(row=24, column=1, columnspan=2,rowspan=2,padx=10,pady=10)
-        Button(right, text="Quit", command=self.quit).grid(row=24, column=3, columnspan=2,rowspan=2,padx=10,pady=10)
+        Button(right, text="Next step", command=self.update,height = 2, width = 40, bg='#b8ac86').grid(row=24, column=1, columnspan=4,rowspan=2,padx=10,pady=10)
+        Button(right, text="Quit", command=self.quit,height = 2, width = 25, bg='#b8ac86').grid(row=0, column=3, columnspan=2,rowspan=1,padx=10,pady=10)
 
     def grid3by3(self):
 
