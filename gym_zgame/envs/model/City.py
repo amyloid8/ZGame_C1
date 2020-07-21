@@ -204,6 +204,9 @@ class City:
         self.num_active = num_active
         self.num_sickly = num_sickly
 
+        for nbh in self.neighborhoods:
+            nbh.density = self.num_moving/self.num_npcs
+
     def do_turn(self, actions):
         loc_1 = actions[0][0]  # Unpack for readability
         dep_1 = actions[0][1]  # Unpack for readability
@@ -919,9 +922,8 @@ class City:
             state[i + 1, 3] = self.mask_visible_data(nbh_data.get('num_sickly', 0)).value
             state[i + 1, 4] = self.mask_visible_data(nbh_data.get('num_zombie', 0)).value
             state[i + 1, 5] = self.mask_visible_data(nbh_data.get('num_dead', 0)).value
-            for j in range(len(nbh.current_deployments)):
+            for j in range(len(nbh.deployments)):
                 state[i + 1, j + 6] = nbh.current_deployments[j].value
-
 
         return state
 
