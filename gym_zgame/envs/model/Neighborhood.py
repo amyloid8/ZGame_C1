@@ -102,17 +102,16 @@ class Neighborhood:
         self.archive_deployments.append(deployment)
 
     def add_deployments(self, deployments):
-        self.deployments.extend(deployments)
+        self.current_deployments.extend(deployments)
+        self.archive_deployments.extend(deployments)
     
     def remove_deployment(self, deployment):
-        self.deployments.remove(deployment)
+        self.current_deployments.remove(deployment)
     
     def remove_deployments(self, deployments):
         for d in deployments:
-            if d in self.deployments:
-                self.deployments.remove(d)
-        self.current_deployments.extend(deployments)
-        self.archive_deployments.extend(deployments)
+            if d in self.current_deployments:
+                self.current_deployments.remove(d)
 
     def get_current_deps(self):
         deps = self.current_deployments

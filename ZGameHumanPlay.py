@@ -55,7 +55,7 @@ class ZGame:
             location_2 = input()
             print('Input Action - Deployment 2:')
             deployment_2 = input()
-            if add_1 != 'a' or add_2 != 'a' or add_1 != 'r' or add_2 != 'r':
+            if add_1 not in ('a','r') or add_2 not in ('a','r'):
                 print('>>> Input error. Try again.')
                 i -= 1
                 continue
@@ -63,7 +63,7 @@ class ZGame:
                 actions = self.env.encode_raw_action(add_1 = 1 if add_1 == 'a' else -1, 
                                                      location_1=LOCATIONS(int(location_1)),
                                                      deployment_1=DEPLOYMENTS(int(deployment_1)),
-                                                     add_2 = 1 if add_1 == 'a' else -1,
+                                                     add_2 = 1 if add_2 == 'a' else -1,
                                                      location_2=LOCATIONS(int(location_2)),
                                                      deployment_2=DEPLOYMENTS(int(deployment_2)))
             except:
