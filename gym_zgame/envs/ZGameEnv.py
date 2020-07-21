@@ -78,12 +78,13 @@ class ZGame(gym.Env):
             raise ValueError('Failed to find acceptable play type.')
 
     @staticmethod
-    def encode_raw_action(location_1, deployment_1, location_2=None, deployment_2=None):
+    def encode_raw_action(add_1, location_1, deployment_1, add_2 = None, location_2=None, deployment_2=None):
         # Takes in locations and deployments and converts it to a pair of ints that matches the action space def
         # Think of it as a 2d array where rows are locations and columns are deployments
         # Then, the 2d array is unwrapped into a 1d array where the 2nd row starts right after the first
-        action_1 = location_1.value * len(DEPLOYMENTS) + deployment_1.value
-        action_2 = location_2.value * len(DEPLOYMENTS) + deployment_2.value
+        # The int is positive when the deployment is added, and negative when the deployment is removed
+        action_1 = add_1 * location_1.value * len(DEPLOYMENTS) + deployment_1.value
+        action_2 = add_2 * location_2.value * len(DEPLOYMENTS) + deployment_2.value
         return [action_1, action_2]
 
     @staticmethod
@@ -92,9 +93,10 @@ class ZGame(gym.Env):
         # Modular arithmetic to the rescue
         readable_actions = []
         for action in actions:
+            add_int = action / abs(action)
             location_int = action // len(DEPLOYMENTS)  # gets the quotient
             deployment_int = action % len(DEPLOYMENTS)  # gets the remainder
-            readable_actions.append([LOCATIONS(location_int), DEPLOYMENTS(deployment_int)])
+            readable_actions.append([add_int, LOCATIONS(location_int), DEPLOYMENTS(deployment_int)])
         return readable_actions
 
     @staticmethod

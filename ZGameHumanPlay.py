@@ -43,17 +43,27 @@ class ZGame:
         i = 0
         for i in range(self.max_turns):
             self.env.print_player_action_selections()
+            print("Add or remove deployment?(a/r)")
+            add_1 = input()[0].lower()
             print('Input Action - Location 1:')
             location_1 = input()
             print('Input Action - Deployment 1:')
             deployment_1 = input()
+            print("Add or remove deployment?(a/r)")
+            add_2 = input()[0].lower()
             print('Input Action - Location 2:')
             location_2 = input()
             print('Input Action - Deployment 2:')
             deployment_2 = input()
+            if add_1 != 'a' or add_2 != 'a' or add_1 != 'r' or add_2 != 'r':
+                print('>>> Input error. Try again.')
+                i -= 1
+                continue
             try:
-                actions = self.env.encode_raw_action(location_1=LOCATIONS(int(location_1)),
+                actions = self.env.encode_raw_action(add_1 = 1 if add_1 == 'a' else -1, 
+                                                     location_1=LOCATIONS(int(location_1)),
                                                      deployment_1=DEPLOYMENTS(int(deployment_1)),
+                                                     add_2 = 1 if add_1 == 'a' else -1,
                                                      location_2=LOCATIONS(int(location_2)),
                                                      deployment_2=DEPLOYMENTS(int(deployment_2)))
             except:
