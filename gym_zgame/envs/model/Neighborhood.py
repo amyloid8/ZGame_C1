@@ -12,7 +12,7 @@ class Neighborhood:
         self.NPCs = []
         self.adj_locations = adj_locations
         self._npc_init(num_init_npcs)
-        self.deployments = []
+        self.archive_deployments = []
         # Transition probabilities
         self.trans_probs = self.compute_baseline_trans_probs()
         # Keep summary stats up to date for ease
@@ -32,6 +32,8 @@ class Neighborhood:
         self.num_sickly = 0
         self.update_summary_stats()
         self.orig_alive, self.orig_dead = self._get_original_state_metrics()
+
+        self.current_deployments = []
 
     def _npc_init(self, num_npcs):
         init_npcs = []
@@ -96,13 +98,28 @@ class Neighborhood:
             npc.clean_bag(self.location)
 
     def add_deployment(self, deployment):
-        self.deployments.append(deployment)
+        self.current_deployments.append(deployment)
+        self.archive_deployments.append(deployment)
 
     def add_deployments(self, deployments):
-        self.deployments.extend(deployments)
+        self.current_deployments.extend(deployments)
+        self.archive_deployments.extend(deployments)
+
+    def get_current_deps(self):
+        deps = self.current_deployments
+        dep_values = []
+        for dep in deps:
+            dep_values.append(dep.value)
+        return dep_values
+
+    def get_dep_history(self, deployment):
+        return self.archive_deployments
+
+
 
     def destroy_deployments_by_type(self, dep_types):
-        updated_deps = [dep for dep in self.deployments if dep not in dep_types]
+        updated_deps = [dep for dep in self.current_deployments if dep not in dep_types]
+        self.current_deployments = updated_deps
 
     def update_summary_stats(self):
         self.num_npcs = len(self.NPCs)
@@ -188,7 +205,7 @@ class Neighborhood:
                              'num_sickly': self.num_sickly,
                              'original_alive': self.orig_alive,
                              'original_dead': self.orig_dead,
-                             'deployments': self.deployments}
+                             'deployments': self.current_deployments}
         return neighborhood_data
 
 
