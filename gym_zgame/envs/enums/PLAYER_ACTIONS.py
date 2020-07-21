@@ -29,6 +29,12 @@ class DEPLOYMENTS(IntEnum):
     FIREBOMB_BARRAGE = 22
     SOCIAL_DISTANCING_SIGNS = 23
     SOCIAL_DISTANCING_CELEBRITY = 24
+    # Added deployments
+    TESTING_CENTER_OPT = 25
+    TESTING_CENTER_MAN = 26
+    SUPPLY_DEPOT = 27
+    FACTORY = 28
+    VOLUNTEER_RECRUITMENT = 29
 
     @staticmethod
     def print():
