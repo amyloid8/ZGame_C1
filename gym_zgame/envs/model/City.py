@@ -918,10 +918,10 @@ class City:
             nbh_data = nbh.get_data()
             state[i + 1, 0] = nbh_data.get('original_alive', 0)  # i + 1 since i starts at 0 and 0 is already filled
             state[i + 1, 1] = nbh_data.get('original_dead', 0)
-            state[i + 1, 2] = self._mask_visible_data(nbh_data.get('num_active', 0)).value
-            state[i + 1, 3] = self._mask_visible_data(nbh_data.get('num_sickly', 0)).value
-            state[i + 1, 4] = self._mask_visible_data(nbh_data.get('num_zombie', 0)).value
-            state[i + 1, 5] = self._mask_visible_data(nbh_data.get('num_dead', 0)).value
+            state[i + 1, 2] = self.mask_visible_data(nbh_data.get('num_active', 0)).value
+            state[i + 1, 3] = self.mask_visible_data(nbh_data.get('num_sickly', 0)).value
+            state[i + 1, 4] = self.mask_visible_data(nbh_data.get('num_zombie', 0)).value
+            state[i + 1, 5] = self.mask_visible_data(nbh_data.get('num_dead', 0)).value
             for j in range(len(nbh.current_deployments)):
                 state[i + 1, j + 6] = nbh.current_deployments[j].value
 
