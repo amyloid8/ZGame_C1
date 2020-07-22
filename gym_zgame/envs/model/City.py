@@ -856,7 +856,7 @@ class City:
             nbh.clean_all_bags()
             zombies_to_move = []
             for npc in nbh.NPCs:
-                if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE:
+                if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE and npc.state_dead is NPC_STATES_DEAD.ALIVE:
                     zombies_to_move.append(npc)
             # If there aren't zombies, finish
             if len(zombies_to_move) == 0:
