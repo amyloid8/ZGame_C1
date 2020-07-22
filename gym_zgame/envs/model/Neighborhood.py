@@ -36,6 +36,9 @@ class Neighborhood:
 
         self.current_deployments = []
 
+    def get_num_npcs(self):
+        return len(self.NPCs)
+
     def _npc_init(self, num_npcs):
         init_npcs = []
         for _ in range(num_npcs):
