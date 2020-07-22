@@ -950,10 +950,15 @@ class City:
         else:
             fear_adj_data = round(real_data * (random.randint(90,100)/100))
 
-        perc_of_npc = fear_adj_data / nbh.get_num_npcs()
+        total_npcs = nbh.get_num_npcs()
+        if total_npcs == 0:
+            perc_of_npc = 0
+            perc_of_one_npc = 0
+        else:
+            perc_of_npc = fear_adj_data / total_npcs
+            perc_of_one_npc = 1.0/total_npcs
         # Find percentage value of 1 person in nbh
-        temp = 1.0/nbh.get_num_npcs()
-        if perc_of_npc < temp:
+        if perc_of_npc < perc_of_one_npc:
             return LEVELS.NONE
         elif perc_of_npc < 0.3:
             return LEVELS.FEW
