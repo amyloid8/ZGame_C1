@@ -19,6 +19,9 @@ class NPC:
         self.bag = []
         self.empty_bag()
 
+    def get_zombie_state(self):
+        return self.state_zombie
+
     def empty_bag(self):
         self.bag = []
 
@@ -73,6 +76,7 @@ class NPC:
 
     def add_to_bag(self, npc_action):
         self.bag.append(npc_action)
+        pass
 
     def remove_from_bag(self, npc_action):
         self.bag.remove(npc_action)

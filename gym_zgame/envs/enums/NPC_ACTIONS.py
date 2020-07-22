@@ -16,9 +16,12 @@ class NPC_ACTIONS(IntEnum):
         for action in NPC_ACTIONS:
             print('{0} -> {1}'.format(action.value, action.name))
 
-    @classmethod
-    def get_random(cls):
-        return random.choice(list(NPC_ACTIONS))
+    #@classmethod
+    @staticmethod
+    def get_random():
+        templist = list(NPC_ACTIONS)
+        temp = random.choice(templist)
+        return temp
 
     @staticmethod
     def get_value_from_string(action):
