@@ -5,6 +5,7 @@ import gym_zgame
 from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
 from GUI import *
+from GUI_2 import *
 from gym_zgame.envs.model.City import City
 
 
