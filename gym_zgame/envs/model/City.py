@@ -611,7 +611,7 @@ class City:
                     for _ in range(num_active):
                         npc.add_to_bag(npc_action)
 
-    # Fear causes a greater chance of random behavior of humans.
+    # Fear causes a greater chance of random behavior of humans. This is a random actions generator based on fear level.
     def _rand_fear_impact(self):
         num_level = self._fear_definition()
         rand_locs = []
