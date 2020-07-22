@@ -350,18 +350,22 @@ class City:
                     self._art_trans_firebomb_barrage(nbh_index)
         self.update_summary_stats()
 
+    # will provide a random factor between 0 and 1 depending on the fear level.
+    # factor will multiply with the probability of each artificial transition deployment and reduce it,
+    # which represents the decreased effectiveness of each deployment as fear increases.
+    # Hopefully, this will provide an incentive to keep fear near its initial value.
     def _rand_fear_prob_factor(self):
         num_level = self._fear_definition()
         if num_level == 2:
-            factor = random.uniform(0.2,0.8)
+            factor = random.uniform(0.5,0.8)
         elif num_level == 1:
-            factor = random.uniform(0.5,0.9)
+            factor = random.uniform(0.7,0.9)
         else:
             factor = 1
         return factor
 
     def _art_trans_z_cure_center_fda(self, nbh_index):
-        bite_cure_prob = 0.25 * self._rand_fear_prob_factor()
+        bite_cure_prob = 0.25 * self._rand_fear_prob_factor() # reduces cure probability
         zombie_cure_prob = 0.01 * self._rand_fear_prob_factor()
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
