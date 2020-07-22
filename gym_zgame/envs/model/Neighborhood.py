@@ -30,10 +30,14 @@ class Neighborhood:
         self.num_moving = 0
         self.num_active = 0
         self.num_sickly = 0
+        self.density = 1
         self.update_summary_stats()
         self.orig_alive, self.orig_dead = self._get_original_state_metrics()
 
         self.current_deployments = []
+
+    def get_num_npcs(self):
+        return len(self.NPCs)
 
     def _npc_init(self, num_npcs):
         init_npcs = []
@@ -190,6 +194,8 @@ class Neighborhood:
         assert (self.num_npcs == total_count_dead)
         assert (self.num_npcs == total_count_zombie)
         assert (self.num_npcs == total_count_flu)
+
+
 
     def get_data(self):
         self.update_summary_stats()
