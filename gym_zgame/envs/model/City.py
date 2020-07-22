@@ -944,11 +944,11 @@ class City:
         real_data = value
         fear_adj_data = 0
         if self.fear > (self.orig_fear * 2.5):
-            fear_adj_data = round(real_data * (random.randint(20,90)/100))
+            fear_adj_data = round(real_data * (random.randint(20,120)/100))
         elif self.fear > (self.orig_fear * 1.5):
-            fear_adj_data = round(real_data * (random.randint(70,95)/100))
+            fear_adj_data = round(real_data * (random.randint(60,120)/100))
         else:
-            fear_adj_data = round(real_data * (random.randint(90,100)/100))
+            fear_adj_data = round(real_data * (random.randint(90,110)/100))
 
         total_npcs = nbh.get_num_npcs()
         if total_npcs == 0:
@@ -956,10 +956,11 @@ class City:
             perc_of_one_npc = 0
         else:
             perc_of_npc = fear_adj_data / total_npcs
-            perc_of_one_npc = 1.0/total_npcs
-        # Find percentage value of 1 person in nbh
-        if perc_of_npc < perc_of_one_npc:
+            perc_of_one_npc = 1.0/total_npcs  # Find percentage value of 1 person in nbh
+        # lower than approx. 3% of the npcs is considered NONE to implement fog
+        if perc_of_npc < perc_of_one_npc * 3:
             return LEVELS.NONE
+        # lower than 30%
         elif perc_of_npc < 0.3:
             return LEVELS.FEW
         else:
