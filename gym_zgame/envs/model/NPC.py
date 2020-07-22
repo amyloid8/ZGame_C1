@@ -78,6 +78,9 @@ class NPC:
         self.bag.remove(npc_action)
 
     def selection(self):
+        if len(self.bag) == 0:
+            print(self.state_zombie.name +"-"+ self.state_dead.name)
+            return None
         return random.choice(self.bag)
 
     def get_data(self):
