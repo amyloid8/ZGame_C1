@@ -37,8 +37,8 @@ class City:
         # CONSTANTS
         self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
                             DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
-                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY, DEPLOYMENTS.TESTING_CENTER_MAN,
-                            DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
+                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY,
+                            DEPLOYMENTS.TESTING_CENTER_MAN, DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
 
         # Keep summary stats up to date for ease
         self.num_npcs = 0
@@ -350,9 +350,19 @@ class City:
                     self._art_trans_firebomb_barrage(nbh_index)
         self.update_summary_stats()
 
+    def _rand_fear_prob_factor(self):
+        num_level = self._fear_definition()
+        if num_level == 2:
+            factor = random.uniform(0.2,0.8)
+        elif num_level == 1:
+            factor = random.uniform(0.5,0.9)
+        else:
+            factor = 1
+        return factor
+
     def _art_trans_z_cure_center_fda(self, nbh_index):
-        bite_cure_prob = 0.25
-        zombie_cure_prob = 0.01
+        bite_cure_prob = 0.25 * self._rand_fear_prob_factor()
+        zombie_cure_prob = 0.01 * self._rand_fear_prob_factor()
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE_BITTEN:
@@ -363,9 +373,9 @@ class City:
                     npc.change_zombie_state(NPC_STATES_ZOMBIE.ZOMBIE_BITTEN)
 
     def _art_trans_z_cure_center_exp(self, nbh_index):
-        bite_cure_prob = 0.33
-        bite_cure_fail_prob = 0.5
-        zombie_cure_prob = 0.33
+        bite_cure_prob = 0.33 * self._rand_fear_prob_factor()
+        bite_cure_fail_prob = 0.5 * self._rand_fear_prob_factor()
+        zombie_cure_prob = 0.33 * self._rand_fear_prob_factor()
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE_BITTEN:
@@ -380,7 +390,7 @@ class City:
 
     def _art_trans_flu_vaccine_free(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
-        vaccine_success = max(0, 0.2 - (0.01 * self.fear))
+        vaccine_success = max(0, 0.2 - (0.01 * self.fear)) * self._rand_fear_prob_factor()
         for npc in nbh.NPCs:
             if (npc.state_flu is not NPC_STATES_FLU.IMMUNE) and (npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE):
                 if random.random() <= vaccine_success:
@@ -388,16 +398,16 @@ class City:
 
     def _art_trans_flu_vaccine_man(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
-        vaccine_success = 0.5
+        vaccine_success = 0.5 * self._rand_fear_prob_factor()
         for npc in nbh.NPCs:
             if (npc.state_flu is not NPC_STATES_FLU.IMMUNE) and (npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE):
                 if random.random() <= vaccine_success:
                     npc.change_flu_state(NPC_STATES_FLU.IMMUNE)
 
     def _art_trans_kiln_no_questions(self, nbh_index):
-        zombie_burn_prob = 0.1
-        sick_burn_prob = 0.05
-        active_burn_prob = 0.01
+        zombie_burn_prob = 0.1 * self._rand_fear_prob_factor()
+        sick_burn_prob = 0.05 * self._rand_fear_prob_factor()
+        active_burn_prob = 0.01 * self._rand_fear_prob_factor()
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE:
@@ -612,7 +622,7 @@ class City:
                         npc.add_to_bag(npc_action)
 
     # Fear causes a greater chance of random behavior of humans. This is a random actions generator based on fear level.
-    def _rand_fear_impact(self):
+    def _rand_fear_actions(self):
         num_level = self._fear_definition()
         rand_locs = []
         if num_level == 2:
@@ -657,7 +667,7 @@ class City:
                 for _ in range(10):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN: # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
         # Pull in sickly people for adj neighborhoods
@@ -683,7 +693,7 @@ class City:
                 for _ in range(10):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN: # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
         # Pull in sickly people for adj neighborhoods
@@ -709,7 +719,7 @@ class City:
                 for _ in range(1):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN: # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
         # Pull in people for adj neighborhoods
@@ -744,7 +754,7 @@ class City:
                 for _ in range(1):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
         # Pull in people for adj neighborhoods
@@ -779,7 +789,7 @@ class City:
                             for _ in range(3):
                                 npc.add_to_bag(inward_npc_action)
                         if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
-                            rand_list = self._rand_fear_impact()
+                            rand_list = self._rand_fear_actions()
                             for i in rand_list:
                                 npc.add_to_bag(i)
 
@@ -797,7 +807,7 @@ class City:
                             for _ in range(10):
                                 npc.add_to_bag(inward_npc_action)
                         if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
-                            rand_list = self._rand_fear_impact()
+                            rand_list = self._rand_fear_actions()
                             for i in rand_list:
                                 npc.add_to_bag(i)
 
@@ -810,7 +820,7 @@ class City:
                 for _ in range(2):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
 
