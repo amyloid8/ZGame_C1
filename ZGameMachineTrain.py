@@ -14,7 +14,7 @@ class ZGame:
     OpenAI blog post: https://openai.com/blog/baselines-acktr-a2c/
     https://stable-baselines.readthedocs.io/en/master/modules/a2c.html
     """
-    def __init__(self, model_filename='rl-agent', num_steps=1000000, num_envs=6):
+    def __init__(self, model_filename='rl-agent', num_steps=1000, num_envs=4):
         self.ENV_NAME = 'ZGame-v0'
         self.MODEL_FILENAME = model_filename
         self.GAME_ID = uuid.uuid4()
