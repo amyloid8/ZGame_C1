@@ -24,7 +24,7 @@ class ZGame(gym.Env):
         self._num_locations = len(LOCATIONS)
         self._num_deployments = len(DEPLOYMENTS)
         self._num_actions = self._num_locations * self._num_deployments
-        self.action_space = spaces.MultiDiscrete([self._num_actions, self._num_actions])
+        self.action_space = spaces.MultiDiscrete([(-1*self._num_actions+1, self._num_actions), (-1*self._num_actions+1,self._num_actions)])
         self.observation_space = spaces.Box(low=0, high=200, shape=(10, 6 + (self.MAX_TURNS * 2)), dtype='uint8')
         self.reset()
 
@@ -36,7 +36,7 @@ class ZGame(gym.Env):
         self._num_locations = len(LOCATIONS)
         self._num_deployments = len(DEPLOYMENTS)
         self._num_actions = self._num_locations * self._num_deployments
-        self.action_space = spaces.MultiDiscrete([self._num_actions, self._num_actions])
+        self.action_space = spaces.MultiDiscrete([(-1*self._num_actions+1, self._num_actions), (-1*self._num_actions+1,self._num_actions)])
         self.observation_space = spaces.Box(low=0, high=200, shape=(10, 6 + (self.MAX_TURNS * 2)), dtype='uint8')
         obs = self.get_obs()
         return obs
