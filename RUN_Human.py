@@ -1,6 +1,7 @@
 import os
 import argparse
 from ZGameHumanPlay import ZGame
+from gym_zgame.envs.Print_Colors.PColor import PBack, PFore, PFont, PControl
 
 parser = argparse.ArgumentParser(description='CLI Argument Parser for Human Play.')
 parser.add_argument('--outfile', help='Data logging file name.', default='data_log.json')

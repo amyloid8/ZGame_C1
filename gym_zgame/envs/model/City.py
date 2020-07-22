@@ -22,6 +22,9 @@ class City:
         self._init_neighborhoods(loc_npc_range)
         self._init_neighborhood_threats()
         self.fear = 5
+
+        self.orig_fear = self.fear
+
         self.resources = 20
         self.delta_fear = 0
         self.delta_resources = 0
@@ -75,6 +78,15 @@ class City:
 
     def get_cost_dict(self):
         return self.DEP_RESOURCE_COST
+
+    def _fear_definition(self):
+        if self.fear > (self.orig_fear * 2.5):
+            return 2
+        elif self.fear > (self.orig_fear * 1.5):
+            return 1
+        else:
+            return 0
+
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
@@ -248,18 +260,16 @@ class City:
         self._update_artificial_states()
         self._update_natural_states()
 
-
     def _update_trackers(self):
         # Update fear and resources increments
         weight_sum = 0
         cost_sum = 0
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
-
             for dep in nbh.current_deployments:
-
                 weight_sum += self.DEP_FEAR_WEIGHTS.get(dep.name)
                 cost_sum -= self.DEP_RESOURCE_COST.get(dep.name)
+
         # IMPORTANT: these sums add up the factors of ALL deployments in the nbh, not only the new deployments.
         self.delta_fear = weight_sum
         self.delta_resources = cost_sum
@@ -601,6 +611,18 @@ class City:
                     for _ in range(num_active):
                         npc.add_to_bag(npc_action)
 
+    # Fear causes a greater chance of random behavior of humans. This is a random actions generator based on fear level.
+    def _rand_fear_impact(self):
+        num_level = self._fear_definition()
+        rand_locs = []
+        if num_level == 2:
+            for i in range(5):
+                rand_locs.append(NPC_ACTIONS.get_random())
+        elif num_level == 1:
+            for i in range(3):
+                rand_locs.append(NPC_ACTIONS.get_random())
+        return rand_locs
+
     def adjust_bags_for_deployments(self):
         # TODO: turn into config.txt
         for nbh_index in range(len(self.neighborhoods)):
@@ -634,6 +656,10 @@ class City:
             if npc.sickly:
                 for _ in range(10):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
+            if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN: # if human, diff degrees of fear levels will impact predictability of actions
+                rand_list = self._rand_fear_impact()
+                for i in rand_list:
+                    npc.add_to_bag(i)
         # Pull in sickly people for adj neighborhoods
         for loc, npc_action in nbh.adj_locations.items():
             inward_npc_action = NPC_ACTIONS.reverse_action(npc_action)
@@ -656,6 +682,10 @@ class City:
             if npc.sickly:
                 for _ in range(10):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
+            if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN: # if human, diff degrees of fear levels will impact predictability of actions
+                rand_list = self._rand_fear_impact()
+                for i in rand_list:
+                    npc.add_to_bag(i)
         # Pull in sickly people for adj neighborhoods
         for loc, npc_action in nbh.adj_locations.items():
             inward_npc_action = NPC_ACTIONS.reverse_action(npc_action)
@@ -678,6 +708,10 @@ class City:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE_BITTEN:
                 for _ in range(1):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
+            if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN: # if human, diff degrees of fear levels will impact predictability of actions
+                rand_list = self._rand_fear_impact()
+                for i in rand_list:
+                    npc.add_to_bag(i)
         # Pull in people for adj neighborhoods
         for loc, npc_action in nbh.adj_locations.items():
             inward_npc_action = NPC_ACTIONS.reverse_action(npc_action)
@@ -709,6 +743,10 @@ class City:
             if npc.active or npc.state_flu is NPC_STATES_FLU.INCUBATING:
                 for _ in range(1):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
+            if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
+                rand_list = self._rand_fear_impact()
+                for i in rand_list:
+                    npc.add_to_bag(i)
         # Pull in people for adj neighborhoods
         for loc, npc_action in nbh.adj_locations.items():
             inward_npc_action = NPC_ACTIONS.reverse_action(npc_action)
@@ -740,6 +778,10 @@ class City:
                         if npc.active:
                             for _ in range(3):
                                 npc.add_to_bag(inward_npc_action)
+                        if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
+                            rand_list = self._rand_fear_impact()
+                            for i in rand_list:
+                                npc.add_to_bag(i)
 
     def _bag_adjust_rally_point_full(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
@@ -754,6 +796,10 @@ class City:
                                 (npc.state_dead is not NPC_STATES_DEAD.DEAD):
                             for _ in range(10):
                                 npc.add_to_bag(inward_npc_action)
+                        if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
+                            rand_list = self._rand_fear_impact()
+                            for i in rand_list:
+                                npc.add_to_bag(i)
 
     def _bag_adjust_social_distancing_signs(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
@@ -763,6 +809,10 @@ class City:
             if npc.sickly and npc.active:
                 for _ in range(2):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
+            if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
+                rand_list = self._rand_fear_impact()
+                for i in rand_list:
+                    npc.add_to_bag(i)
 
     def _bag_adjust_social_distancing_celeb(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
@@ -787,7 +837,7 @@ class City:
             for npc in nbh.NPCs:
                 if npc.state_dead is NPC_STATES_DEAD.ALIVE and npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE:
                     action = npc.selection()  # Selects a random action from the npc bag of actions
-                    new_location = self._get_new_location(nbh, action)
+                    new_location = self._get_new_location(nbh.location, action)
                     if new_location is None:  # handles movement out of the city
                         new_location = nbh.location  # if movement out of the city, stay in place
                     # Find index of new neighborhood
@@ -806,7 +856,7 @@ class City:
             nbh.clean_all_bags()
             zombies_to_move = []
             for npc in nbh.NPCs:
-                if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE:
+                if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE and npc.state_dead is NPC_STATES_DEAD.ALIVE:
                     zombies_to_move.append(npc)
             # If there aren't zombies, finish
             if len(zombies_to_move) == 0:
@@ -814,7 +864,7 @@ class City:
             # Pick a random zombie, this zombie will control the movement of all zombies!
             rand_zombie = random.choice(zombies_to_move)
             action = rand_zombie.selection()  # Selects a random action from the npc bag of actions
-            new_location = self._get_new_location(nbh, action)
+            new_location = self._get_new_location(nbh.location, action)
             if new_location is None:  # handles movement out of the city
                 new_location = nbh.location  # if movement out of the city, stay in place
             # Find index of new neighborhood
@@ -889,14 +939,33 @@ class City:
                      'original_dead': self.orig_dead}
         return city_data
 
-    def mask_visible_data(self, value):
+    def _mask_visible_data(self, nbh, value):
         # Don't report out (to user and in state) the actual values, instead, bin them into none, few, and many
-        if value < self.fear:  # [0, fear] inclusive, also, handles negative values (which shouldn't happen)
+        # real_data = value
+        fear_adj_data = 0
+        if self.fear > (self.orig_fear * 2.5):
+            fear_adj_data = round(real_data * (random.randint(20,90)/100))
+        elif self.fear > (self.orig_fear * 1.5):
+            fear_adj_data = round(real_data * (random.randint(70,95)/100))
+        else:
+            fear_adj_data = round(real_data * (random.randint(90,100)/100))
+
+        perc_of_npc = fear_adj_data / nbh.get_num_npcs()
+        # Find percentage value of 1 person in nbh
+        temp = 1.0/nbh.get_num_npcs()
+        if perc_of_npc < temp:
             return LEVELS.NONE
-        elif value < (self.num_npcs * 0.5) + self.fear:  # [fear + 1, half population + fear]
+        elif perc_of_npc < 0.3:
             return LEVELS.FEW
-        else:  # else [half population + fear + 1, total population], also handles values that are too large
+        else:
             return LEVELS.MANY
+
+        # if value < self.fear:  # [0, fear] inclusive, also, handles negative values (which shouldn't happen)
+        #     return LEVELS.NONE
+        # elif value < self.fear + (self.num_npcs * 0.5):  # [fear + 1, half population + fear]
+        #     return LEVELS.FEW
+        # else:  # else [half population + fear + 1, total population], also handles values that are too large
+        #     return LEVELS.MANY
 
     def rl_encode(self):
         # Set up data structure for the state space, must match the ZGameEnv!
@@ -918,11 +987,11 @@ class City:
             nbh_data = nbh.get_data()
             state[i + 1, 0] = nbh_data.get('original_alive', 0)  # i + 1 since i starts at 0 and 0 is already filled
             state[i + 1, 1] = nbh_data.get('original_dead', 0)
-            state[i + 1, 2] = self.mask_visible_data(nbh_data.get('num_active', 0)).value
-            state[i + 1, 3] = self.mask_visible_data(nbh_data.get('num_sickly', 0)).value
-            state[i + 1, 4] = self.mask_visible_data(nbh_data.get('num_zombie', 0)).value
-            state[i + 1, 5] = self.mask_visible_data(nbh_data.get('num_dead', 0)).value
-            for j in range(len(nbh.deployments)):
+            state[i + 1, 2] = self.mask_visible_data(nbh, nbh_data.get('num_active', 0)).value
+            state[i + 1, 3] = self.mask_visible_data(nbh, nbh_data.get('num_sickly', 0)).value
+            state[i + 1, 4] = self.mask_visible_data(nbh, nbh_data.get('num_zombie', 0)).value
+            state[i + 1, 5] = self.mask_visible_data(nbh, nbh_data.get('num_dead', 0)).value
+            for j in range(len(nbh.current_deployments)):
                 state[i + 1, j + 6] = nbh.current_deployments[j].value
 
         return state
@@ -1072,16 +1141,119 @@ class City:
 
     @staticmethod
     def _get_new_location(old_location, npc_action):
-        if old_location.location not in LOCATIONS.__members__.values():
-            raise ValueError('Bad location passed into new location mapping.')
-        for member in NPC_ACTIONS.__members__.values():
-            if member in old_location.adj_locations.values():
-                print("hi")
-                return list(old_location.adj_locations.keys())[list(old_location.adj_locations.values()).index(member)]
-            elif member is NPC_ACTIONS.STAY:
-                return old_location.location
-            else:
+        if old_location is LOCATIONS.CENTER:
+            if npc_action is NPC_ACTIONS.STAY:
+                return LOCATIONS.CENTER
+            if npc_action is NPC_ACTIONS.N:
+                return LOCATIONS.N
+            if npc_action is NPC_ACTIONS.S:
+                return LOCATIONS.S
+            if npc_action is NPC_ACTIONS.E:
+                return LOCATIONS.E
+            if npc_action is NPC_ACTIONS.W:
+                return LOCATIONS.W
+        elif old_location is LOCATIONS.N:
+            if npc_action is NPC_ACTIONS.STAY:
+                return LOCATIONS.N
+            if npc_action is NPC_ACTIONS.N:
                 return None
+            if npc_action is NPC_ACTIONS.S:
+                return LOCATIONS.CENTER
+            if npc_action is NPC_ACTIONS.E:
+                return LOCATIONS.NE
+            if npc_action is NPC_ACTIONS.W:
+                return LOCATIONS.NW
+        elif old_location is LOCATIONS.S:
+            if npc_action is NPC_ACTIONS.STAY:
+                return LOCATIONS.S
+            if npc_action is NPC_ACTIONS.N:
+                return LOCATIONS.CENTER
+            if npc_action is NPC_ACTIONS.S:
+                return None
+            if npc_action is NPC_ACTIONS.E:
+                return LOCATIONS.SE
+            if npc_action is NPC_ACTIONS.W:
+                return LOCATIONS.SW
+        elif old_location is LOCATIONS.E:
+            if npc_action is NPC_ACTIONS.STAY:
+                return LOCATIONS.E
+            if npc_action is NPC_ACTIONS.N:
+                return LOCATIONS.NE
+            if npc_action is NPC_ACTIONS.S:
+                return LOCATIONS.SE
+            if npc_action is NPC_ACTIONS.E:
+                return None
+            if npc_action is NPC_ACTIONS.W:
+                return LOCATIONS.CENTER
+        elif old_location is LOCATIONS.W:
+            if npc_action is NPC_ACTIONS.STAY:
+                return LOCATIONS.W
+            if npc_action is NPC_ACTIONS.N:
+                return LOCATIONS.NW
+            if npc_action is NPC_ACTIONS.S:
+                return LOCATIONS.SW
+            if npc_action is NPC_ACTIONS.E:
+                return LOCATIONS.CENTER
+            if npc_action is NPC_ACTIONS.W:
+                return None
+        elif old_location is LOCATIONS.NE:
+            if npc_action is NPC_ACTIONS.STAY:
+                return LOCATIONS.NE
+            if npc_action is NPC_ACTIONS.N:
+                return None
+            if npc_action is NPC_ACTIONS.S:
+                return LOCATIONS.E
+            if npc_action is NPC_ACTIONS.E:
+                return None
+            if npc_action is NPC_ACTIONS.W:
+                return LOCATIONS.N
+        elif old_location is LOCATIONS.NW:
+            if npc_action is NPC_ACTIONS.STAY:
+                return LOCATIONS.NW
+            if npc_action is NPC_ACTIONS.N:
+                return None
+            if npc_action is NPC_ACTIONS.S:
+                return LOCATIONS.W
+            if npc_action is NPC_ACTIONS.E:
+                return LOCATIONS.N
+            if npc_action is NPC_ACTIONS.W:
+                return None
+        elif old_location is LOCATIONS.SE:
+            if npc_action is NPC_ACTIONS.STAY:
+                return LOCATIONS.SE
+            if npc_action is NPC_ACTIONS.N:
+                return LOCATIONS.E
+            if npc_action is NPC_ACTIONS.S:
+                return None
+            if npc_action is NPC_ACTIONS.E:
+                return None
+            if npc_action is NPC_ACTIONS.W:
+                return LOCATIONS.S
+        elif old_location is LOCATIONS.SW:
+            if npc_action is NPC_ACTIONS.STAY:
+                return LOCATIONS.SW
+            if npc_action is NPC_ACTIONS.N:
+                return LOCATIONS.W
+            if npc_action is NPC_ACTIONS.S:
+                return None
+            if npc_action is NPC_ACTIONS.E:
+                return LOCATIONS.S
+            if npc_action is NPC_ACTIONS.W:
+                return None
+        else:
+            raise ValueError('Bad location passed into new location mapping.')
+
+    # def _get_new_location(old_location, npc_action):
+    #     if old_location.location not in LOCATIONS.__members__.values():
+    #         raise ValueError('Bad location passed into new location mapping.')
+    #     for member in NPC_ACTIONS.__members__.values():
+    #         if member in old_location.adj_locations.values():
+    #             print("hi")
+    #             return list(old_location.adj_locations.keys())[list(old_location.adj_locations.values()).index(member)]
+    #         elif member is NPC_ACTIONS.STAY:
+    #             return old_location.location
+    #         else:
+    #             return None
 
 
 if __name__ == '__main__':
