@@ -68,20 +68,20 @@ class GUI(Frame):
 
 
         Label(right, text="Location 1", bg='#5e817b').grid(row=14, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
-        loc1 = Entry(right, bg='#5e817b')
-        loc1.grid(row=14, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.loc1 = Entry(right, bg='#5e817b')
+        self.loc1.grid(row=14, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
         Label(right, text="Deployment 1", bg='#5e817b').grid(row=16, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
-        dep1 = Entry(right, bg='#5e817b')
-        dep1.grid(row=16, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.dep1 = Entry(right, bg='#5e817b')
+        self.dep1.grid(row=16, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
         Label(right, text="Location 2", bg='#5e817b').grid(row=18, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
-        loc2 = Entry(right, bg='#5e817b')
-        loc2.grid(row=18, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.loc2 = Entry(right, bg='#5e817b')
+        self.loc2.grid(row=18, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
         Label(right, text="Deployment 2", bg='#5e817b').grid(row=20, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
-        dep2 = Entry(right, bg='#5e817b')
-        dep2.grid(row=20, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.dep2 = Entry(right, bg='#5e817b')
+        self.dep2.grid(row=20, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
 
         Button(right, text="Next step", command=self.update,height = 2, width = 40, bg='#b8ac86').grid(row=24, column=1, columnspan=4,rowspan=2,padx=10,pady=10)
         Button(right, text="Quit", command=self.quit,height = 2, width = 25, bg='#b8ac86').grid(row=0, column=3, columnspan=2,rowspan=1,padx=10,pady=10)
