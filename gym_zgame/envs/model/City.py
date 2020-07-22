@@ -205,12 +205,14 @@ class City:
         self.num_sickly = num_sickly
 
     def do_turn(self, actions):
-        add_1 = actions[0][0]
+        add_1 = actions[0][0]  
         loc_1 = actions[0][1]  # Unpack for readability
         dep_1 = actions[0][2]  # Unpack for readability
         add_2 = actions[1][0]
         loc_2 = actions[1][1]  # Unpack for readability
         dep_2 = actions[1][2]  # Unpack for readability
+        add_1, loc_1, dep_1 = self._check_removal(add_1, loc_1, dep_1)
+        add_2, loc_2, dep_2 = self._check_removal(add_2, loc_2, dep_2)
         nbh_1_index = 0  # Get location indexes for easier handling
         nbh_2_index = 0  # Get location indexes for easier handling
         for i in range(len(self.neighborhoods)):
@@ -236,6 +238,14 @@ class City:
         self.fear -= 1 if self.fear > 0 else 0
         self.turn += 1
         return score, done
+
+    def _check_removal(self, add, loc, dep):
+        # If a removal is invalid, set the decoded raw actions to doing nothing 
+        if add == -1:
+            if dep not in self.neighbrohoods[loc].current_deployments:
+                return 1, 0, 0
+            
+        return add, loc, dep
 
     def _add_building_to_location(self, nbh_index, dep):
         # Update the list of deployments at that location
