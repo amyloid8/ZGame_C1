@@ -256,15 +256,16 @@ class City:
 
     def _check_removal(self, add, loc, dep):
         # If a removal is invalid, set the decoded raw actions to doing nothing 
-        if add == -1:
+        if add == 1:
             if dep not in self.neighbrohoods[loc].current_deployments:
-                return 1, 0, 0
+                return 0, 0, 0
             
         return add, loc, dep
 
     def _add_building_to_location(self, nbh_index, dep):
         # Update the list of deployments at that location
-        self.neighborhoods[nbh_index].add_deployment(dep)
+        if dep != 0:
+            self.neighborhoods[nbh_index].add_deployment(dep)
 
     def _remove_building_from_location(self, nbh_index, dep):
         self.neighborhoods[nbh_index].remove_deployment(dep)

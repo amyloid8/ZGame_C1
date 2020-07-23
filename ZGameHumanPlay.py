@@ -56,15 +56,17 @@ class ZGame:
             location_2 = input()
             print('Input Action - Deployment 2:')
             deployment_2 = input()
+
+            #error checking for if a user inputs a building not present, or tries to remove nothing
             if add_1 not in ('a','r') or add_2 not in ('a','r'):
                 print('>>> Input error. Try again.')
                 i -= 1
                 continue
-            if add_1 == 'r' and int(deployment_1) not in self.env.city.neighborhoods[int(location_1)].current_deployments:
+            if add_1 == 'r' and (int(deployment_2) not in self.env.city.neighborhoods[int(location_2)].current_deployments or int(deployment_2) == 0):
                 print('>>> Invalid deployment is removed. Try again.')
                 i -= 1
                 continue
-            if add_2 == 'r' and int(deployment_2) not in self.env.city.neighborhoods[int(location_2)].current_deployments:
+            if add_2 == 'r' and (int(deployment_2) not in self.env.city.neighborhoods[int(location_2)].current_deployments or int(deployment_2) == 0):
                 print('>>> Invalid deployment is removed. Try again.')
                 i -= 1
                 continue
