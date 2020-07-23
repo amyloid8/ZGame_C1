@@ -57,6 +57,8 @@ class City:
         self.num_sickly = 0
         self.update_summary_stats()
 
+        self.one_time_deps = [DEPLOYMENTS.FIREBOMB_PRIMED, DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.RALLY_POINT_OPT, DEPLOYMENTS.RALLY_POINT_FULL]
+
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
 
@@ -264,11 +266,11 @@ class City:
 
     def _add_building_to_location(self, nbh_index, dep):
         # Update the list of deployments at that location
-        if dep != 0:
-            if dep in (LOCATIONS.FIREBOMB_PRIMED.value, LOCATIONS.FIREBOMB_BARRAGE.value, LOCATIONS.RALLY_POINT_OPT.value, LOCATIONS.RALLY_POINT_FULL.value):
-                self.neighborhoods[nbh_index].add_onetime_deployment(dep)
-            else:
-                self.neighborhoods[nbh_index].add_deployment(dep)
+        if dep != DEPLOYMENTS.NONE:
+            # if dep in self.one_time_deps:
+            #     self.neighborhoods[nbh_index].add_onetime_deployment(dep)
+            # else:
+            self.neighborhoods[nbh_index].add_deployment(dep)
 
     def _remove_building_from_location(self, nbh_index, dep):
         self.neighborhoods[nbh_index].remove_deployment(dep)
@@ -367,6 +369,10 @@ class City:
                     self._art_trans_sniper_tower_free(nbh_index)
                 elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
                     self._art_trans_firebomb_barrage(nbh_index)
+
+                if dep in self.one_time_deps:
+                    nbh.add_to_archives(dep)
+                    nbh.remove_deployment(dep)
         self.update_summary_stats()
 
     # will provide a random factor between 0 and 1 depending on the fear level.
