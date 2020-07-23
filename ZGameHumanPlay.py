@@ -9,14 +9,24 @@ from gym_zgame.envs.model.City import City
 
 class ZGame:
 
-    def __init__(self, data_log_file='data_log.json'):
+    def __init__(self, data_log_file='data_log.json', analysis_log_file='analysis_log.json'):
         self.ENV_NAME = 'ZGame-v0'
         self.DATA_LOG_FILE_NAME = data_log_file
+
+        self.ANALYSIS_LOG_FILE_NAME = analysis_log_file
+
         self.GAME_ID = uuid.uuid4()
         self.env = None
         self.current_actions = []
         self.turn = 0
         self.max_turns = 14
+        self.reward = 0
+
+        self.score_track = []
+        self.reward_track = []
+        self.actions_track = []
+        self.total_rewards = 0
+
         # Always do these actions upon start
         self._setup()
 
@@ -29,6 +39,17 @@ class ZGame:
         self.env.reset()
         # Report success
         print('Created new environment {0} with GameID: {1}'.format(self.ENV_NAME, self.GAME_ID))
+
+    # # stores information that changes between turns
+    # def turn_info_track(self, score, reward):
+    #     self.score_track.append(score)
+    #     self.reward_track.append(reward)
+    #
+    # # stores information that is provided at the end of game
+    # def game_info_track(self, archive_deps, sum_reward):
+    #     self.actions_track = archive_deps
+    #     for i in self.reward_track:
+    #         self.
 
     def done(self):
         print("Episode finished after {} turns".format(self.turn))
@@ -87,7 +108,12 @@ class ZGame:
                     print('>>> Out of resources. Wasted deployment(s): ' + canceled_dep)
 
             observation, reward, done, info = self.env.step(actions)
+
+            #self.turn_info_track(City.get_score(),)
+
             print(info)
+
+
             self.env.render(mode='human')
 
             # Write action and stuff out to disk.
@@ -100,6 +126,9 @@ class ZGame:
                 'game_info': {k.replace('.', '_'): v for (k, v) in info.items()},
                 'raw_state': observation
             }
+            # data_to_analysis = {
+            #     'score':
+            # }
             with open(self.DATA_LOG_FILE_NAME, 'a') as f_:
                 f_.write(json.dumps(data_to_log) + '\n')
 

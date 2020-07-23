@@ -87,6 +87,11 @@ class City:
         else:
             return 0
 
+    def get_turn_score(self):
+        return self.score
+
+    def get_total_score(self):
+        return self.total_score
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
