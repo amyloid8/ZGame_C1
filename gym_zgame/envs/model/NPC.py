@@ -15,6 +15,7 @@ class NPC:
         self.moving = None
         self.active = None
         self.sickly = None
+        self.income = random.randint(-10, 10)
         self.update_states()
         self.bag = []
         self.empty_bag()
@@ -94,7 +95,8 @@ class NPC:
                        'state_flu': self.state_flu,
                        'moving': self.moving,
                        'active': self.active,
-                       'sickly': self.sickly}
+                       'sickly': self.sickly,
+                       'income': self.income}
         return player_data
 
 

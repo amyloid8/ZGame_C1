@@ -94,45 +94,51 @@ class City:
                                LOCATIONS.S: NPC_ACTIONS.S,
                                LOCATIONS.E: NPC_ACTIONS.E,
                                LOCATIONS.W: NPC_ACTIONS.W},
-                              random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                              random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         north = Neighborhood('N', LOCATIONS.N,
                              {LOCATIONS.CENTER: NPC_ACTIONS.S,
                               LOCATIONS.NE: NPC_ACTIONS.E,
                              LOCATIONS.NW: NPC_ACTIONS.W},
-                             random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                             random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         south = Neighborhood('S', LOCATIONS.S,
                              {LOCATIONS.CENTER: NPC_ACTIONS.N,
                               LOCATIONS.SE: NPC_ACTIONS.E,
                               LOCATIONS.SW: NPC_ACTIONS.W},
-                             random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                             random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         east = Neighborhood('E', LOCATIONS.E,
                             {LOCATIONS.CENTER: NPC_ACTIONS.W,
                              LOCATIONS.NE: NPC_ACTIONS.N,
                              LOCATIONS.SE: NPC_ACTIONS.S},
-                            random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                            random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         west = Neighborhood('W', LOCATIONS.W,
                             {LOCATIONS.CENTER: NPC_ACTIONS.E,
                              LOCATIONS.NW: NPC_ACTIONS.N,
                              LOCATIONS.SW: NPC_ACTIONS.S},
-                            random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                            random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         north_east = Neighborhood('NE', LOCATIONS.NE,
                                   {LOCATIONS.N: NPC_ACTIONS.W,
                                    LOCATIONS.E: NPC_ACTIONS.S},
-                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         north_west = Neighborhood('NW', LOCATIONS.NW,
                                   {LOCATIONS.N: NPC_ACTIONS.E,
                                    LOCATIONS.W: NPC_ACTIONS.S},
-                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         south_east = Neighborhood('SE', LOCATIONS.SE,
                                   {LOCATIONS.S: NPC_ACTIONS.W,
                                    LOCATIONS.E: NPC_ACTIONS.N},
-                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         south_west = Neighborhood('SW', LOCATIONS.SW,
                                   {LOCATIONS.S: NPC_ACTIONS.E,
                                    LOCATIONS.W: NPC_ACTIONS.N},
-                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         self.neighborhoods = [center, north, south, east, west,
                               north_east, north_west, south_east, south_west]
+
+    def get_num_npcs(self):
+        try:
+            return self.num_npcs
+        except:
+            return 0
 
     def _init_neighborhood_threats(self):
         # Add 10 dead in a random location
@@ -217,7 +223,7 @@ class City:
         self.num_sickly = num_sickly
 
         for nbh in self.neighborhoods:
-            nbh.density = self.num_moving/self.num_npcs
+            nbh.update_summary_stats()
 
     def do_turn(self, actions):
         loc_1 = actions[0][0]  # Unpack for readability
