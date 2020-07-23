@@ -265,7 +265,10 @@ class City:
     def _add_building_to_location(self, nbh_index, dep):
         # Update the list of deployments at that location
         if dep != 0:
-            self.neighborhoods[nbh_index].add_deployment(dep)
+            if dep in (LOCATIONS.FIREBOMB_PRIMED.value, LOCATIONS.FIREBOMB_BARRAGE.value, LOCATIONS.RALLY_POINT_OPT.value, LOCATIONS.RALLY_POINT_FULL.value):
+                self.neighborhoods[nbh_index].add_onetime_deployment(dep)
+            else:
+                self.neighborhoods[nbh_index].add_deployment(dep)
 
     def _remove_building_from_location(self, nbh_index, dep):
         self.neighborhoods[nbh_index].remove_deployment(dep)
