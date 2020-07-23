@@ -231,7 +231,7 @@ class City:
                 if loc is nbh.location:
                     nbh_index = i
             self._add_building_to_location(nbh_index, dep) if add == 0 else self._remove_building_from_location(nbh_index, dep)
-
+            self.update_states()
         '''add_1 = actions[0][0]  
         loc_1 = actions[0][1]  # Unpack for readability
         dep_1 = actions[0][2]  # Unpack for readability
