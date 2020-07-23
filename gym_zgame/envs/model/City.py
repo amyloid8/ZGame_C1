@@ -220,7 +220,19 @@ class City:
             nbh.density = self.num_moving/self.num_npcs
 
     def do_turn(self, actions):
-        add_1 = actions[0][0]  
+        for action in actions:
+            add = action[0]  # Unpack for readability
+            loc = action[1]
+            dep = action[2]
+            add, loc, dep = self._check_removal(add, loc, dep)
+            nbh_index = 0    # Get location index for easier handling
+            for i in range(len(self.neighborhoods)):
+                nbh = self.neighborhoods[i]
+                if loc is nbh.location:
+                    nbh_index = i
+            self._add_building_to_location(nbh_index, dep) if add == 0 else self._remove_building_from_location(nbh_index, dep)
+
+        '''add_1 = actions[0][0]  
         loc_1 = actions[0][1]  # Unpack for readability
         dep_1 = actions[0][2]  # Unpack for readability
         add_2 = actions[1][0]
@@ -238,7 +250,7 @@ class City:
                 nbh_2_index = i
         # Process turn
         self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 0 else self._remove_building_from_location(nbh_1_index, dep_1)
-        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)
+        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)'''
         self.update_states()
         self.reset_bags()
         self.adjust_bags_for_deployments()
