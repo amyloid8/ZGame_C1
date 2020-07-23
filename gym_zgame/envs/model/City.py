@@ -259,7 +259,7 @@ class City:
     def _check_removal(self, add, loc, dep):
         # If a removal is invalid, set the decoded raw actions to doing nothing 
         if add == 1:
-            if dep not in self.neighbrohoods[loc].current_deployments:
+            if dep not in self.neighborhoods[loc].current_deployments:
                 return 0, 0, 0
             
         return add, loc, dep
