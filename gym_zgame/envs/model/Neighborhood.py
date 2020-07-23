@@ -116,7 +116,7 @@ class Neighborhood:
             dep_values.append(dep.value)
         return dep_values
 
-    def get_dep_history(self, deployment):
+    def get_dep_history(self):
         return self.archive_deployments
 
 
