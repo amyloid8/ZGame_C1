@@ -37,8 +37,8 @@ class City:
         # CONSTANTS
         self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
                             DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
-                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY, DEPLOYMENTS.TESTING_CENTER_MAN,
-                            DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
+                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY,
+                            DEPLOYMENTS.TESTING_CENTER_MAN, DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
 
         # Keep summary stats up to date for ease
         self.num_npcs = 0
@@ -220,10 +220,14 @@ class City:
             nbh.density = self.num_moving/self.num_npcs
 
     def do_turn(self, actions):
-        loc_1 = actions[0][0]  # Unpack for readability
-        dep_1 = actions[0][1]  # Unpack for readability
-        loc_2 = actions[1][0]  # Unpack for readability
-        dep_2 = actions[1][1]  # Unpack for readability
+        add_1 = actions[0][0]  
+        loc_1 = actions[0][1]  # Unpack for readability
+        dep_1 = actions[0][2]  # Unpack for readability
+        add_2 = actions[1][0]
+        loc_2 = actions[1][1]  # Unpack for readability
+        dep_2 = actions[1][2]  # Unpack for readability
+        add_1, loc_1, dep_1 = self._check_removal(add_1, loc_1, dep_1)
+        add_2, loc_2, dep_2 = self._check_removal(add_2, loc_2, dep_2)
         nbh_1_index = 0  # Get location indexes for easier handling
         nbh_2_index = 0  # Get location indexes for easier handling
         for i in range(len(self.neighborhoods)):
@@ -233,7 +237,8 @@ class City:
             if loc_2 is nbh.location:
                 nbh_2_index = i
         # Process turn
-        self._add_buildings_to_locations(nbh_1_index, dep_1, nbh_2_index, dep_2)
+        self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 0 else self._remove_building_from_location(nbh_1_index, dep_1)
+        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)
         self.update_states()
         self.reset_bags()
         self.adjust_bags_for_deployments()
@@ -249,10 +254,21 @@ class City:
         self.turn += 1
         return score, done
 
-    def _add_buildings_to_locations(self, nbh_1_index, dep_1, nbh_2_index, dep_2):
+    def _check_removal(self, add, loc, dep):
+        # If a removal is invalid, set the decoded raw actions to doing nothing 
+        if add == 1:
+            if dep not in self.neighborhoods[loc].current_deployments:
+                return 0, LOCATIONS(0), DEPLOYMENTS(0) 
+            
+        return add, loc, dep
+
+    def _add_building_to_location(self, nbh_index, dep):
         # Update the list of deployments at that location
-        self.neighborhoods[nbh_1_index].add_deployment(dep_1)
-        self.neighborhoods[nbh_2_index].add_deployment(dep_2)
+        if dep != DEPLOYMENTS.NONE:
+            self.neighborhoods[nbh_index].add_deployment(dep)
+
+    def _remove_building_from_location(self, nbh_index, dep):
+        self.neighborhoods[nbh_index].remove_deployment(dep)
 
     def update_states(self):
         self._update_trackers()
@@ -348,11 +364,29 @@ class City:
                     self._art_trans_sniper_tower_free(nbh_index)
                 elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
                     self._art_trans_firebomb_barrage(nbh_index)
+
+                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.FIREBOMB_BARRAGE,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
+                    nbh.add_to_archives(dep)
+                    nbh.remove_deployment(dep)
         self.update_summary_stats()
 
+    # will provide a random factor between 0 and 1 depending on the fear level.
+    # factor will multiply with the probability of each artificial transition deployment and reduce it,
+    # which represents the decreased effectiveness of each deployment as fear increases.
+    # Hopefully, this will provide an incentive to keep fear near its initial value.
+    def _rand_fear_prob_factor(self):
+        num_level = self._fear_definition()
+        if num_level == 2:
+            factor = random.uniform(0.5,0.8)
+        elif num_level == 1:
+            factor = random.uniform(0.7,0.9)
+        else:
+            factor = 1
+        return factor
+
     def _art_trans_z_cure_center_fda(self, nbh_index):
-        bite_cure_prob = 0.25
-        zombie_cure_prob = 0.01
+        bite_cure_prob = 0.25 * self._rand_fear_prob_factor() # reduces cure probability
+        zombie_cure_prob = 0.01 * self._rand_fear_prob_factor()
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE_BITTEN:
@@ -363,9 +397,9 @@ class City:
                     npc.change_zombie_state(NPC_STATES_ZOMBIE.ZOMBIE_BITTEN)
 
     def _art_trans_z_cure_center_exp(self, nbh_index):
-        bite_cure_prob = 0.33
-        bite_cure_fail_prob = 0.5
-        zombie_cure_prob = 0.33
+        bite_cure_prob = 0.33 * self._rand_fear_prob_factor()
+        bite_cure_fail_prob = 0.5 * self._rand_fear_prob_factor()
+        zombie_cure_prob = 0.33 * self._rand_fear_prob_factor()
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE_BITTEN:
@@ -380,7 +414,7 @@ class City:
 
     def _art_trans_flu_vaccine_free(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
-        vaccine_success = max(0, 0.2 - (0.01 * self.fear))
+        vaccine_success = max(0, 0.2 - (0.01 * self.fear)) * self._rand_fear_prob_factor()
         for npc in nbh.NPCs:
             if (npc.state_flu is not NPC_STATES_FLU.IMMUNE) and (npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE):
                 if random.random() <= vaccine_success:
@@ -388,16 +422,16 @@ class City:
 
     def _art_trans_flu_vaccine_man(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
-        vaccine_success = 0.5
+        vaccine_success = 0.5 * self._rand_fear_prob_factor()
         for npc in nbh.NPCs:
             if (npc.state_flu is not NPC_STATES_FLU.IMMUNE) and (npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE):
                 if random.random() <= vaccine_success:
                     npc.change_flu_state(NPC_STATES_FLU.IMMUNE)
 
     def _art_trans_kiln_no_questions(self, nbh_index):
-        zombie_burn_prob = 0.1
-        sick_burn_prob = 0.05
-        active_burn_prob = 0.01
+        zombie_burn_prob = 0.1 * self._rand_fear_prob_factor()
+        sick_burn_prob = 0.05 * self._rand_fear_prob_factor()
+        active_burn_prob = 0.01 * self._rand_fear_prob_factor()
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE:
@@ -612,7 +646,7 @@ class City:
                         npc.add_to_bag(npc_action)
 
     # Fear causes a greater chance of random behavior of humans. This is a random actions generator based on fear level.
-    def _rand_fear_impact(self):
+    def _rand_fear_actions(self):
         num_level = self._fear_definition()
         rand_locs = []
         if num_level == 2:
@@ -657,7 +691,7 @@ class City:
                 for _ in range(10):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN: # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
         # Pull in sickly people for adj neighborhoods
@@ -683,7 +717,7 @@ class City:
                 for _ in range(10):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN: # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
         # Pull in sickly people for adj neighborhoods
@@ -709,7 +743,7 @@ class City:
                 for _ in range(1):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN: # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
         # Pull in people for adj neighborhoods
@@ -744,7 +778,7 @@ class City:
                 for _ in range(1):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
         # Pull in people for adj neighborhoods
@@ -779,7 +813,7 @@ class City:
                             for _ in range(3):
                                 npc.add_to_bag(inward_npc_action)
                         if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
-                            rand_list = self._rand_fear_impact()
+                            rand_list = self._rand_fear_actions()
                             for i in rand_list:
                                 npc.add_to_bag(i)
 
@@ -797,7 +831,7 @@ class City:
                             for _ in range(10):
                                 npc.add_to_bag(inward_npc_action)
                         if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
-                            rand_list = self._rand_fear_impact()
+                            rand_list = self._rand_fear_actions()
                             for i in rand_list:
                                 npc.add_to_bag(i)
 
@@ -810,7 +844,7 @@ class City:
                 for _ in range(2):
                     npc.add_to_bag(NPC_ACTIONS.STAY)
             if npc.get_zombie_state() == NPC_STATES_ZOMBIE.HUMAN:  # if human, diff degrees of fear levels will impact predictability of actions
-                rand_list = self._rand_fear_impact()
+                rand_list = self._rand_fear_actions()
                 for i in rand_list:
                     npc.add_to_bag(i)
 
@@ -944,17 +978,23 @@ class City:
         real_data = value
         fear_adj_data = 0
         if self.fear > (self.orig_fear * 2.5):
-            fear_adj_data = round(real_data * (random.randint(20,90)/100))
+            fear_adj_data = round(real_data * (random.randint(20,120)/100))
         elif self.fear > (self.orig_fear * 1.5):
-            fear_adj_data = round(real_data * (random.randint(70,95)/100))
+            fear_adj_data = round(real_data * (random.randint(60,120)/100))
         else:
-            fear_adj_data = round(real_data * (random.randint(90,100)/100))
+            fear_adj_data = round(real_data * (random.randint(90,110)/100))
 
-        perc_of_npc = fear_adj_data / nbh.get_num_npcs()
-        # Find percentage value of 1 person in nbh
-        temp = 1.0/nbh.get_num_npcs()
-        if perc_of_npc < temp:
+        total_npcs = nbh.get_num_npcs()
+        if total_npcs == 0:
+            perc_of_npc = 0
+            perc_of_one_npc = 0
+        else:
+            perc_of_npc = fear_adj_data / total_npcs
+            perc_of_one_npc = 1.0/total_npcs  # Find percentage value of 1 person in nbh
+        # lower than approx. 3% of the npcs is considered NONE to implement fog
+        if perc_of_npc < perc_of_one_npc * 3:
             return LEVELS.NONE
+        # lower than 30%
         elif perc_of_npc < 0.3:
             return LEVELS.FEW
         else:
