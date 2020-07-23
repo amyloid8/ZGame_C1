@@ -107,12 +107,6 @@ class Neighborhood:
     def add_deployment(self, deployment):
         self.current_deployments.append(deployment)
         self.archive_deployments.append(deployment)
-    #
-    # def add_onetime_deployment(self, deployment):
-    #     # Adds deployments considered to be one-time
-    #     # in only the deployment history so that it
-    #     # cannot be "removed" in a future turn
-    #     self.archive_deployments.append(deployment)
 
     def add_deployments(self, deployments):
         self.current_deployments.extend(deployments)

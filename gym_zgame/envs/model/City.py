@@ -57,8 +57,6 @@ class City:
         self.num_sickly = 0
         self.update_summary_stats()
 
-        self.one_time_deps = [DEPLOYMENTS.FIREBOMB_PRIMED, DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.RALLY_POINT_OPT, DEPLOYMENTS.RALLY_POINT_FULL]
-
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
 
@@ -242,9 +240,11 @@ class City:
         self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 0 else self._remove_building_from_location(nbh_1_index, dep_1)
         self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)
         self.update_states()
+        self.remove()
         self.reset_bags()
         self.adjust_bags_for_deployments()
         self.process_moves()
+        self.remove_onetime_deployments()
         # Update state info
         done = self.check_done()
         self.update_summary_stats()
@@ -260,17 +260,20 @@ class City:
         # If a removal is invalid, set the decoded raw actions to doing nothing 
         if add == 1:
             if dep not in self.neighborhoods[loc].current_deployments:
-                return 0, 0, 0
+                return 0, LOCATIONS(0), DEPLOYMENTS(0) 
             
         return add, loc, dep
 
     def _add_building_to_location(self, nbh_index, dep):
         # Update the list of deployments at that location
         if dep != DEPLOYMENTS.NONE:
-            # if dep in self.one_time_deps:
-            #     self.neighborhoods[nbh_index].add_onetime_deployment(dep)
-            # else:
             self.neighborhoods[nbh_index].add_deployment(dep)
+    
+    def _remove_onetime_deployments(self):
+        for nbh in self.neighborhoods:
+            for dep in nbh.deployments:
+                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED, DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.RALLY_POINT_OPT, DEPLOYMENTS.RALLY_POINT_FULL):
+                    nbh.remove_deployment(dep)
 
     def _remove_building_from_location(self, nbh_index, dep):
         self.neighborhoods[nbh_index].remove_deployment(dep)
