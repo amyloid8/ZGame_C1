@@ -91,7 +91,9 @@ class GUI(Frame):
 
         Button(right, text="Next step", command=self.update,height = 2, width = 40, bg='#b8ac86').grid(row=24, column=1, columnspan=4,rowspan=2,padx=10,pady=10)
         Button(right, text="Quit", command=self.quit,height = 2, width = 25, bg='#b8ac86').grid(row=0, column=3, columnspan=2,rowspan=1,padx=10,pady=10)
-
+        v = IntVar()
+        Radiobutton(right, variable=v, value=1, text="Add", padx=20, command=print("hello"), indicatoron=0,width=5).grid(column=1, row=15)
+        Radiobutton(right, variable=v, value=2, text="Remove", padx=20, command=print("hello"), indicatoron=0,width=5).grid(column=1, row=16)
     def grid3by3(self, frame):
 
         nbh_c = None
