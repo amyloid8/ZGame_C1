@@ -220,10 +220,14 @@ class City:
             nbh.density = self.num_moving/self.num_npcs
 
     def do_turn(self, actions):
-        loc_1 = actions[0][0]  # Unpack for readability
-        dep_1 = actions[0][1]  # Unpack for readability
-        loc_2 = actions[1][0]  # Unpack for readability
-        dep_2 = actions[1][1]  # Unpack for readability
+        add_1 = actions[0][0]  
+        loc_1 = actions[0][1]  # Unpack for readability
+        dep_1 = actions[0][2]  # Unpack for readability
+        add_2 = actions[1][0]
+        loc_2 = actions[1][1]  # Unpack for readability
+        dep_2 = actions[1][2]  # Unpack for readability
+        add_1, loc_1, dep_1 = self._check_removal(add_1, loc_1, dep_1)
+        add_2, loc_2, dep_2 = self._check_removal(add_2, loc_2, dep_2)
         nbh_1_index = 0  # Get location indexes for easier handling
         nbh_2_index = 0  # Get location indexes for easier handling
         for i in range(len(self.neighborhoods)):
@@ -233,7 +237,8 @@ class City:
             if loc_2 is nbh.location:
                 nbh_2_index = i
         # Process turn
-        self._add_buildings_to_locations(nbh_1_index, dep_1, nbh_2_index, dep_2)
+        self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 0 else self._remove_building_from_location(nbh_1_index, dep_1)
+        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)
         self.update_states()
         self.reset_bags()
         self.adjust_bags_for_deployments()
@@ -249,10 +254,21 @@ class City:
         self.turn += 1
         return score, done
 
-    def _add_buildings_to_locations(self, nbh_1_index, dep_1, nbh_2_index, dep_2):
+    def _check_removal(self, add, loc, dep):
+        # If a removal is invalid, set the decoded raw actions to doing nothing 
+        if add == 1:
+            if dep not in self.neighborhoods[loc].current_deployments:
+                return 0, LOCATIONS(0), DEPLOYMENTS(0) 
+            
+        return add, loc, dep
+
+    def _add_building_to_location(self, nbh_index, dep):
         # Update the list of deployments at that location
-        self.neighborhoods[nbh_1_index].add_deployment(dep_1)
-        self.neighborhoods[nbh_2_index].add_deployment(dep_2)
+        if dep != DEPLOYMENTS.NONE:
+            self.neighborhoods[nbh_index].add_deployment(dep)
+
+    def _remove_building_from_location(self, nbh_index, dep):
+        self.neighborhoods[nbh_index].remove_deployment(dep)
 
     def update_states(self):
         self._update_trackers()
@@ -348,6 +364,10 @@ class City:
                     self._art_trans_sniper_tower_free(nbh_index)
                 elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
                     self._art_trans_firebomb_barrage(nbh_index)
+
+                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.FIREBOMB_BARRAGE,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
+                    nbh.add_to_archives(dep)
+                    nbh.remove_deployment(dep)
         self.update_summary_stats()
 
     # will provide a random factor between 0 and 1 depending on the fear level.

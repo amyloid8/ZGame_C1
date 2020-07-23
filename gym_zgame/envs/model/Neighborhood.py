@@ -39,6 +39,9 @@ class Neighborhood:
     def get_num_npcs(self):
         return len(self.NPCs)
 
+    def add_to_archives(self, dep):
+        self.archive_deployments.append(dep)
+
     def _npc_init(self, num_npcs):
         init_npcs = []
         for _ in range(num_npcs):
@@ -108,6 +111,14 @@ class Neighborhood:
     def add_deployments(self, deployments):
         self.current_deployments.extend(deployments)
         self.archive_deployments.extend(deployments)
+    
+    def remove_deployment(self, deployment):
+        self.current_deployments.remove(deployment)
+    
+    def remove_deployments(self, deployments):
+        for d in deployments:
+            if d in self.current_deployments:
+                self.current_deployments.remove(d)
 
     def get_current_deps(self):
         deps = self.current_deployments
@@ -118,8 +129,6 @@ class Neighborhood:
 
     def get_dep_history(self, deployment):
         return self.archive_deployments
-
-
 
     def destroy_deployments_by_type(self, dep_types):
         updated_deps = [dep for dep in self.current_deployments if dep not in dep_types]
