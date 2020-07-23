@@ -483,6 +483,8 @@ class City:
             if npc.moving:
                 if random.random() <= vaporize_prob:
                     npc.change_dead_state(NPC_STATES_DEAD.ASHEN)
+        #firebomb destroys all deployments in the neighborhood deployed in
+        nbh.current_deployments = []
 
     def _update_natural_states(self):
         self._society_transitions()
