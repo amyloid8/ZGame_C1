@@ -237,8 +237,8 @@ class City:
             if loc_2 is nbh.location:
                 nbh_2_index = i
         # Process turn
-        self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 1 else self._remove_building_from_location(nbh_1_index, dep_1)
-        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 1 else self._remove_building_from_location(nbh_2_index, dep_2)
+        self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 0 else self._remove_building_from_location(nbh_1_index, dep_1)
+        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)
         self.update_states()
         self.reset_bags()
         self.adjust_bags_for_deployments()

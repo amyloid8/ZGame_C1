@@ -70,10 +70,10 @@ class ZGame:
                 continue
 
             try:
-                actions = self.env.encode_raw_action(add_1 = 1 if add_1 == 'a' else -1, 
+                actions = self.env.encode_raw_action(add_1 = 0 if add_1 == 'a' else 1, 
                                                      location_1=LOCATIONS(int(location_1)),
                                                      deployment_1=DEPLOYMENTS(int(deployment_1)),
-                                                     add_2 = 1 if add_2 == 'a' else -1,
+                                                     add_2 = 0 if add_2 == 'a' else 1,
                                                      location_2=LOCATIONS(int(location_2)),
                                                      deployment_2=DEPLOYMENTS(int(deployment_2)))
             except:
