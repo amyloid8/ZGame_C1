@@ -244,7 +244,6 @@ class City:
         self.reset_bags()
         self.adjust_bags_for_deployments()
         self.process_moves()
-        self.remove_onetime_deployments()
         # Update state info
         done = self.check_done()
         self.update_summary_stats()
@@ -268,12 +267,6 @@ class City:
         # Update the list of deployments at that location
         if dep != DEPLOYMENTS.NONE:
             self.neighborhoods[nbh_index].add_deployment(dep)
-    
-    def _remove_onetime_deployments(self):
-        for nbh in self.neighborhoods:
-            for dep in nbh.deployments:
-                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED, DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.RALLY_POINT_OPT, DEPLOYMENTS.RALLY_POINT_FULL):
-                    nbh.remove_deployment(dep)
 
     def _remove_building_from_location(self, nbh_index, dep):
         self.neighborhoods[nbh_index].remove_deployment(dep)
