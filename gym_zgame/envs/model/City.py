@@ -365,7 +365,8 @@ class City:
                 elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
                     self._art_trans_firebomb_barrage(nbh_index)
 
-                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.FIREBOMB_BARRAGE,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
+                #removed firebomb barrage because it clears the active deployments before this check
+                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
                     nbh.add_to_archives(dep)
                     nbh.remove_deployment(dep)
         self.update_summary_stats()
