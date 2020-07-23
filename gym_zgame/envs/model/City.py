@@ -939,9 +939,9 @@ class City:
                      'original_dead': self.orig_dead}
         return city_data
 
-    def _mask_visible_data(self, nbh, value):
+    def mask_visible_data(self, value):
         # Don't report out (to user and in state) the actual values, instead, bin them into none, few, and many
-        # real_data = value
+        real_data = value
         fear_adj_data = 0
         if self.fear > (self.orig_fear * 2.5):
             fear_adj_data = round(real_data * (random.randint(20,90)/100))
