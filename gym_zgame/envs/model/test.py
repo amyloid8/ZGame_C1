@@ -104,7 +104,7 @@ class Neighborhood:
     def add_deployment(self, deployment):
         self.current_deployments.append(deployment)
         self.archive_deployments.append(deployment)
-
+        
     def add_deployments(self, deployments):
         self.current_deployments.extend(deployments)
         self.archive_deployments.extend(deployments)
