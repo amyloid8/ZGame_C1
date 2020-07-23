@@ -240,7 +240,6 @@ class City:
         self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 0 else self._remove_building_from_location(nbh_1_index, dep_1)
         self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)
         self.update_states()
-        self.remove()
         self.reset_bags()
         self.adjust_bags_for_deployments()
         self.process_moves()
@@ -366,7 +365,7 @@ class City:
                 elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
                     self._art_trans_firebomb_barrage(nbh_index)
 
-                if dep in self.one_time_deps:
+                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.FIREBOMB_BARRAGE,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
                     nbh.add_to_archives(dep)
                     nbh.remove_deployment(dep)
         self.update_summary_stats()
