@@ -47,9 +47,7 @@ class DataAnalyzer:
         # df.plot(kind='line', x='game ID', y='immune', color='blue', ax=ax3)
 
         length = self.ids.count()
-
         game_num = list(range(1,length+1))
-
         fig, axs = plt.subplots(3, sharex=True, sharey=True)
         fig.suptitle('NPC Trends')
         axs[0].plot(game_num, self.alive)
@@ -60,17 +58,6 @@ class DataAnalyzer:
         axs[2].plot(game_num, self.healthy)
         axs[2].plot(game_num, self.flu)
         axs[2].plot(game_num, self.immune)
-
-        # fig, axs = plt.subplots(ncols=1, nrows=3)
-        # gs = axs[1].get_gridspec()
-        # # remove the underlying axes
-        # for ax in axs[1:, -1]:
-        #     ax.remove()
-        # fig.add_subplot(gs[1:, -1])
-        # # axbig.annotate('Big Axes \nGridSpec[1:, -1]', (0.1, 0.5),
-        # #                xycoords='axes fraction', va='center')
-
-        # fig.tight_layout()
 
         plt.show()
 

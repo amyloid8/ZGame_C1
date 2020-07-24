@@ -21,7 +21,7 @@ class ZGame:
 
         #contains: {game id, total score, total reward, list of actions,
         # total alive, dead, ashen, human, zombie, healthy, flu, immune}
-        self.ANALYSIS_FILE_NAME = analysis_log_file
+        self.ANALYSIS_FILENAME = analysis_log_file
 
         self.MODEL_FILENAME = model_filename
         self.GAME_ID = uuid.uuid4()
@@ -47,7 +47,7 @@ class ZGame:
 
         data_to_log = all_stats
 
-        with open(self.ANALYSIS_FILE_NAME, 'a') as f_:
+        with open(self.ANALYSIS_FILENAME, 'a') as f_:
             f_.write(json.dumps(data_to_log) + '\n')
 
     def _setup(self):

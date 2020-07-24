@@ -14,9 +14,10 @@ class ZGame:
     OpenAI blog post: https://openai.com/blog/baselines-acktr-a2c/
     https://stable-baselines.readthedocs.io/en/master/modules/a2c.html
     """
-    def __init__(self, model_filename='rl-agent', num_steps=1000, num_envs=4):
+    def __init__(self, model_filename='rl-agent', num_steps=1000, num_envs=4, analysis_log_file='analysis_info.json'):
         self.ENV_NAME = 'ZGame-v0'
         self.MODEL_FILENAME = model_filename
+        self.ANALYSIS_FILENAME = analysis_log_file
         self.GAME_ID = uuid.uuid4()
         self.env = None
         self.current_actions = []
@@ -28,6 +29,19 @@ class ZGame:
         self.num_envs = num_envs
         # Always do these actions upon start
         self._setup()
+
+    def collect_end_stats(self):
+        general_stats = self.env.get_gen_info()
+        city_stats = self.env.get_city_info()
+        all_stats = {}
+        all_stats.update(city_stats)
+        all_stats.update(general_stats)
+        all_stats.update({'total reward': self.total_reward, 'game ID': str(self.GAME_ID)})
+
+        data_to_log = all_stats
+
+        with open(self.ANALYSIS_FILENAME, 'a') as f_:
+            f_.write(json.dumps(data_to_log) + '\n')
 
     def _setup(self):
         # Game parameters
@@ -41,6 +55,7 @@ class ZGame:
 
     def done(self):
         print("Episode finished after {} turns".format(self.turn))
+        self.collect_end_stats()
         self._cleanup()
 
     def _cleanup(self):
