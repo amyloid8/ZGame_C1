@@ -102,7 +102,7 @@ class ZGame(gym.Env):
         obs = self.get_obs()
         info = {'turn': self.turn, 'step_reward': score, 'total_reward': self.total_score}
         self.reward = score
-        self.collect_stats(self.LOG_FILENAME)
+        self.collect_stats(self.LOG_FILENAME) # goes into train_info.json
         return obs, self.total_score, self.done, info
 
     def _do_turn(self, actions):
