@@ -50,8 +50,8 @@ class ZGame:
         decoded_actions = self.env.decode_raw_action(actions)
         action_1 = decoded_actions[0]
         action_2 = decoded_actions[1]
-        print('Action 1: Location - {0}, Deployment - {1}'.format(action_1[0].name, action_1[1].name))
-        print('Action 2: Location - {0}, Deployment - {1}'.format(action_2[0].name, action_2[1].name))
+        print('Action 1: Location - {0}, Deployment - {1}, Add/Remove - {2}'.format(action_1[1].name, action_1[2].name, 'Add' if action_1[0] == 0 else 'Remove'))
+        print('Action 2: Location - {0}, Deployment - {1}, Add/Remove - {2}'.format(action_2[1].name, action_2[2].name, 'Add' if action_2[0] == 0 else 'Remove'))
 
     def run(self):
         print('Starting new game with machine play!')
