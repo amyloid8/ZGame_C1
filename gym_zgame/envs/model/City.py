@@ -19,28 +19,6 @@ class City:
         self.FILENAME = config_file
 
         self.neighborhoods = []
-        self._init_neighborhoods(loc_npc_range)
-        self._init_neighborhood_threats()
-        self.fear = 5
-
-        self.orig_fear = self.fear
-
-        self.resources = 20
-        self.delta_fear = 0
-        self.delta_resources = 0
-        self.score = 0
-        self.total_score = 0
-        self.turn = 0
-        self.max_turns = 14  # each turn represents one day
-        # Computed
-        self.orig_alive, self.orig_dead = self._get_original_state_metrics()
-        # CONSTANTS
-        self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
-                            DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
-                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY,
-                            DEPLOYMENTS.TESTING_CENTER_MAN, DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
-
-        # Keep summary stats up to date for ease
         self.num_npcs = 0
         self.num_alive = 0
         self.num_dead = 0
@@ -55,7 +33,30 @@ class City:
         self.num_moving = 0
         self.num_active = 0
         self.num_sickly = 0
+        self._init_neighborhoods(loc_npc_range)
+        self._init_neighborhood_threats()
+        self.fear = 5
+
+        self.orig_fear = self.fear
+
+        self.resources = 20
+        self.delta_fear = 0
+        self.delta_resources = 0
+        self.score = 0
+        self.total_score = 0
+        self.turn = 0
+        self.max_turns = 14  # each turn represents one day
         self.update_summary_stats()
+        # Computed
+        self.orig_alive, self.orig_dead = self._get_original_state_metrics()
+        # CONSTANTS
+        self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
+                            DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
+                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY,
+                            DEPLOYMENTS.TESTING_CENTER_MAN, DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
+
+        # Keep summary stats up to date for ease
+
 
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
@@ -94,45 +95,49 @@ class City:
                                LOCATIONS.S: NPC_ACTIONS.S,
                                LOCATIONS.E: NPC_ACTIONS.E,
                                LOCATIONS.W: NPC_ACTIONS.W},
-                              random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                              random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         north = Neighborhood('N', LOCATIONS.N,
                              {LOCATIONS.CENTER: NPC_ACTIONS.S,
                               LOCATIONS.NE: NPC_ACTIONS.E,
                              LOCATIONS.NW: NPC_ACTIONS.W},
-                             random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                             random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         south = Neighborhood('S', LOCATIONS.S,
                              {LOCATIONS.CENTER: NPC_ACTIONS.N,
                               LOCATIONS.SE: NPC_ACTIONS.E,
                               LOCATIONS.SW: NPC_ACTIONS.W},
-                             random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                             random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         east = Neighborhood('E', LOCATIONS.E,
                             {LOCATIONS.CENTER: NPC_ACTIONS.W,
                              LOCATIONS.NE: NPC_ACTIONS.N,
                              LOCATIONS.SE: NPC_ACTIONS.S},
-                            random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                            random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         west = Neighborhood('W', LOCATIONS.W,
                             {LOCATIONS.CENTER: NPC_ACTIONS.E,
                              LOCATIONS.NW: NPC_ACTIONS.N,
                              LOCATIONS.SW: NPC_ACTIONS.S},
-                            random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                            random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         north_east = Neighborhood('NE', LOCATIONS.NE,
                                   {LOCATIONS.N: NPC_ACTIONS.W,
                                    LOCATIONS.E: NPC_ACTIONS.S},
-                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         north_west = Neighborhood('NW', LOCATIONS.NW,
                                   {LOCATIONS.N: NPC_ACTIONS.E,
                                    LOCATIONS.W: NPC_ACTIONS.S},
-                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         south_east = Neighborhood('SE', LOCATIONS.SE,
                                   {LOCATIONS.S: NPC_ACTIONS.W,
                                    LOCATIONS.E: NPC_ACTIONS.N},
-                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         south_west = Neighborhood('SW', LOCATIONS.SW,
                                   {LOCATIONS.S: NPC_ACTIONS.E,
                                    LOCATIONS.W: NPC_ACTIONS.N},
-                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1))
+                                  random.randrange(loc_npc_range[0], loc_npc_range[1], 1), self)
         self.neighborhoods = [center, north, south, east, west,
                               north_east, north_west, south_east, south_west]
+
+    def get_num_npcs(self):
+        return self.num_npcs
+
 
     def _init_neighborhood_threats(self):
         # Add 10 dead in a random location
@@ -217,10 +222,22 @@ class City:
         self.num_sickly = num_sickly
 
         for nbh in self.neighborhoods:
-            nbh.density = self.num_moving/self.num_npcs
+            nbh.update_summary_stats()
 
     def do_turn(self, actions):
-        add_1 = actions[0][0]  
+        for action in actions:
+            add = action[0]  # Unpack for readability
+            loc = action[1]
+            dep = action[2]
+            add, loc, dep = self._check_removal(add, loc, dep)
+            nbh_index = 0    # Get location index for easier handling
+            for i in range(len(self.neighborhoods)):
+                nbh = self.neighborhoods[i]
+                if loc is nbh.location:
+                    nbh_index = i
+            self._add_building_to_location(nbh_index, dep) if add == 0 else self._remove_building_from_location(nbh_index, dep)
+            self.update_states()
+        '''add_1 = actions[0][0]  
         loc_1 = actions[0][1]  # Unpack for readability
         dep_1 = actions[0][2]  # Unpack for readability
         add_2 = actions[1][0]
@@ -238,7 +255,7 @@ class City:
                 nbh_2_index = i
         # Process turn
         self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 0 else self._remove_building_from_location(nbh_1_index, dep_1)
-        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)
+        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)'''
         self.update_states()
         self.reset_bags()
         self.adjust_bags_for_deployments()
@@ -365,7 +382,8 @@ class City:
                 elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
                     self._art_trans_firebomb_barrage(nbh_index)
 
-                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.FIREBOMB_BARRAGE,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
+                #removed firebomb barrage because it clears the active deployments before this check
+                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
                     nbh.add_to_archives(dep)
                     nbh.remove_deployment(dep)
         self.update_summary_stats()
@@ -483,7 +501,9 @@ class City:
             if npc.moving:
                 if random.random() <= vaporize_prob:
                     npc.change_dead_state(NPC_STATES_DEAD.ASHEN)
-
+        
+        #firebomb destroys nbh deployments
+        nbh.current_deployments = []
     def _update_natural_states(self):
         self._society_transitions()
         self._flu_transitions()
