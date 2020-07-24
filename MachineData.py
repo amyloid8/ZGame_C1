@@ -12,9 +12,9 @@ class DataAnalyzer:
         temp = pd.read_json(filename, lines=True)
         self.all_data = pd.DataFrame(temp)
 
-        self.ids = self.all_data['game ID']
-        self.score = self.all_data['total score']
-        self.dep_record = self.all_data['total deployments']
+        # self.ids = self.all_data['game ID']
+        self.score = self.all_data['total_score']
+        self.dep_record = self.all_data['deployments']
         self.reward = 0
 
         self.alive = self.all_data['alive']
@@ -46,7 +46,9 @@ class DataAnalyzer:
         # df.plot(kind='line', x='game ID', y='flu', color='red', ax=ax3)
         # df.plot(kind='line', x='game ID', y='immune', color='blue', ax=ax3)
 
-        length = self.ids.count()
+        # length = self.ids.count()
+        length = 10000
+        print(self.all_data)
         game_num = list(range(1,length+1))
         fig, axs = plt.subplots(3, sharex=True, sharey=True)
         fig.suptitle('NPC Trends')
@@ -58,6 +60,12 @@ class DataAnalyzer:
         axs[2].plot(game_num, self.healthy)
         axs[2].plot(game_num, self.flu)
         axs[2].plot(game_num, self.immune)
+
+        axs[0].legend(['Alive', 'Dead', 'Ashen'])
+        axs[1].legend(['Human', 'Zombie'])
+        axs[2].legend(['Healthy', 'Flu', 'Immune'])
+        plt.xlabel('Steps')
+        plt.ylabel('Number of NPC type')
 
         plt.show()
 
@@ -71,5 +79,5 @@ class DataAnalyzer:
         # plt.show()
 
 if __name__ == '__main__':
-    analyzer = DataAnalyzer('analysis_info.json')
+    analyzer = DataAnalyzer('train_info.json')
     analyzer.graph_population()

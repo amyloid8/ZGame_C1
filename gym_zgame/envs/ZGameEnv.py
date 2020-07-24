@@ -1,6 +1,7 @@
 import gym
 from gym import spaces
 import math
+import json
 from gym_zgame.envs.enums import PLAY_TYPE
 from gym_zgame.envs.model.City import City
 from gym_zgame.envs.enums.PLAYER_ACTIONS import DEPLOYMENTS, LOCATIONS
@@ -10,10 +11,11 @@ from gym_zgame.envs.Print_Colors.PColor import PBack, PFore, PFont
 
 class ZGame(gym.Env):
 
-    def __init__(self):
+    def __init__(self, log_name = 'train_info.json'):
         # Tunable parameters
         self.play_type = PLAY_TYPE.MACHINE  # Defaults only, set in main classes
         self.render_mode = 'machine'
+        self.LOG_FILENAME = log_name
         # CONSTANTS
         self.MAX_TURNS = 14
         # Main parameters
@@ -27,19 +29,25 @@ class ZGame(gym.Env):
         self._num_actions = self._num_locations * self._num_deployments
         self.action_space = spaces.MultiDiscrete([self._num_actions, self._num_actions])
         self.observation_space = spaces.Box(low=0, high=200, shape=(10, 6 + (self.MAX_TURNS * 2)), dtype='uint8')
+
         self.reset()
+        self.end_stats = {}
+        self.reward = []
+
 
     def get_gen_info(self):
         # contains: {game
-        # id, total
+        # id?, total
         # score, total
         # reward, list
         # of
         # actions,
         # # total alive, dead, ashen, human, zombie, healthy, flu, immune}
         info = {
-            'total score': self.city.total_score,
-            'total deployments': self.city.all_deployments
+            'score': self.city.total_score,
+            'deployments': self.city.all_deployments,
+            'reward': self.reward,
+            'total_score': self.total_score
         }
         return info
 
@@ -55,6 +63,16 @@ class ZGame(gym.Env):
             'immune': self.city.num_immune
         }
         return info
+
+    def collect_stats(self, filename):
+        self.end_stats.update(self.get_gen_info())
+        self.end_stats.update(self.get_city_info())
+        self.end_stats.update({'reward': self.reward})
+        self.end_stats.update({'total_score': self.total_score})
+        data_to_log = self.end_stats
+
+        with open(filename, 'a') as f_:
+            f_.write(json.dumps(data_to_log) + '\n')
 
     def reset(self):
         self.city = City()
@@ -83,6 +101,8 @@ class ZGame(gym.Env):
         # Report out basic information for step
         obs = self.get_obs()
         info = {'turn': self.turn, 'step_reward': score, 'total_reward': self.total_score}
+        self.reward = score
+        self.collect_stats(self.LOG_FILENAME)
         return obs, self.total_score, self.done, info
 
     def _do_turn(self, actions):
