@@ -365,7 +365,8 @@ class City:
                 elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
                     self._art_trans_firebomb_barrage(nbh_index)
 
-                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.FIREBOMB_BARRAGE,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
+                #removed firebomb barrage because it clears the active deployments before this check
+                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
                     nbh.add_to_archives(dep)
                     nbh.remove_deployment(dep)
         self.update_summary_stats()
@@ -483,7 +484,9 @@ class City:
             if npc.moving:
                 if random.random() <= vaporize_prob:
                     npc.change_dead_state(NPC_STATES_DEAD.ASHEN)
-
+        
+        #firebomb destroys nbh deployments
+        nbh.current_deployments = []
     def _update_natural_states(self):
         self._society_transitions()
         self._flu_transitions()
