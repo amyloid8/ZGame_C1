@@ -57,6 +57,8 @@ class City:
         self.num_sickly = 0
         self.update_summary_stats()
 
+        self.all_deployments = []
+
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
 
@@ -75,6 +77,31 @@ class City:
         self.DEP_FEAR_WEIGHTS.update(data["fear_config"])
         self.DEP_RESOURCE_COST.update(data["resource_config"])
         self.SCORE_WEIGHTS.update(data["score_config"])
+
+    def get_city_stats(self):
+        info = []
+        info.append([
+            self.total_score,
+            self.fear,
+            self.resources,
+
+            self.num_npcs,
+            self.num_alive,
+            self.num_dead,
+            self.num_ashen,
+            self.num_human,
+            self.num_zombie_bitten,
+            self.num_zombie,
+            self.num_healthy,
+            self.num_incubating,
+            self.num_flu,
+            self.num_immune,
+            self.num_moving,
+            self.num_active,
+            self.num_sickly
+        ])
+        return info
+
 
     def get_cost_dict(self):
         return self.DEP_RESOURCE_COST
@@ -258,6 +285,8 @@ class City:
         # Update the list of deployments at that location
         self.neighborhoods[nbh_1_index].add_deployment(dep_1)
         self.neighborhoods[nbh_2_index].add_deployment(dep_2)
+        #recordkeeping
+        self.all_deployments.append([dep_1, dep_2])
 
     def update_states(self):
         self._update_trackers()

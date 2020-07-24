@@ -9,11 +9,9 @@ from gym_zgame.envs.model.City import City
 
 class ZGame:
 
-    def __init__(self, data_log_file='data_log.json', analysis_log_file='analysis_log.json'):
+    def __init__(self, data_log_file='data_log.json'):
         self.ENV_NAME = 'ZGame-v0'
         self.DATA_LOG_FILE_NAME = data_log_file
-
-        self.ANALYSIS_LOG_FILE_NAME = analysis_log_file
 
         self.GAME_ID = uuid.uuid4()
         self.env = None

@@ -5,6 +5,7 @@ from gym_zgame.envs.enums import PLAY_TYPE
 from gym_zgame.envs.model.City import City
 from gym_zgame.envs.enums.PLAYER_ACTIONS import DEPLOYMENTS, LOCATIONS
 from gym_zgame.envs.Print_Colors.PColor import PBack, PFore, PFont
+from ZGameMachinePlay import ZGame
 
 
 class ZGame(gym.Env):
@@ -27,6 +28,34 @@ class ZGame(gym.Env):
         self.action_space = spaces.MultiDiscrete([self._num_actions, self._num_actions])
         self.observation_space = spaces.Box(low=0, high=200, shape=(10, 6 + (self.MAX_TURNS * 2)), dtype='uint8')
         self.reset()
+
+    def get_gen_info(self):
+        # contains: {game
+        # id, total
+        # score, total
+        # reward, list
+        # of
+        # actions,
+        # # total alive, dead, ashen, human, zombie, healthy, flu, immune}
+        info = {
+            'game_id': str(self.GAME_ID),
+            'total score': self.city.total_score,
+            'total deployments': self.city.all_deployments
+        }
+        return info
+
+    def get_city_info(self):
+        info = {
+            'alive': self.city.num_alive,
+            'dead': self.city.num_dead,
+            'ashen': self.city.num_ashen,
+            'human': self.city.num_human,
+            'zombie': self.city.num_zombie,
+            'healthy': self.city.num_healthy,
+            'flu': self.city.num_flu,
+            'immune': self.city.num_immune
+        }
+        return info
 
     def reset(self):
         self.city = City()

@@ -4,6 +4,8 @@ import gym
 import gym_zgame
 from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from stable_baselines import A2C
+from gym_zgame.envs.enums.NPC_ACTIONS import LOCATIONS
+from gym_zgame.envs.enums.PLAYER_ACTIONS import DEPLOYMENTS
 
 
 class ZGame:
@@ -13,20 +15,36 @@ class ZGame:
     OpenAI blog post: https://openai.com/blog/baselines-acktr-a2c/
     https://stable-baselines.readthedocs.io/en/master/modules/a2c.html
     """
-    def __init__(self, model_filename, data_log_file='data_log.json'):
+    def __init__(self, model_filename, data_log_file='data_log.json', analysis_log_file='analysis_info.json'):
         self.ENV_NAME = 'ZGame-v0'
         self.DATA_LOG_FILE_NAME = data_log_file
+
+        #contains: {game id, total score, total reward, list of actions,
+        # total alive, dead, ashen, human, zombie, healthy, flu, immune}
+        self.ANALYSIS_FILE_NAME = analysis_log_file
+
         self.MODEL_FILENAME = model_filename
         self.GAME_ID = uuid.uuid4()
         self.env = None
         self.current_actions = []
+        self.all_deployments = []
         self.turn = 0
         self.max_turns = 14
+        self.total_reward = 0
         # Learning Parameters
         self._verbosity = 1
         self.model = None
         # Always do these actions upon start
         self._setup()
+
+    def collect_end_stats(self):
+        general_stats = self.env.get_end_info(self.env)
+        city_stats = self.env.get_city_info(self.env)
+        all_stats = {}
+        all_stats.update(city_stats)
+        all_stats.update(general_stats)
+        all_stats.update({'total reward': self.total_reward})
+        return all_stats
 
     def _setup(self):
         # Game parameters
@@ -62,12 +80,21 @@ class ZGame:
             observation, reward, done, info = self.env.step(actions)
             self.env.render(mode='human')
             self._print_actions(actions)
+
+            # for testing data analysis purposes only
+            readable_actions = self.env.decode_raw_action(actions)
+            loc_1, dep_1 = readable_actions[0][0].value, readable_actions[0][1].value
+            loc_2, dep_2 = readable_actions[1][0].value, readable_actions[1][1].value
+            deps_data = [dep_1, dep_2]
+            self.all_deployments.append([dep_1, dep_2])
+            self.total_reward += reward
+
             print(info)
             # Write action and stuff out to disk.
             data_to_log = {
                 'game_id': str(self.GAME_ID),
                 'step': self.turn,
-                'actions': actions.tolist(),
+                'actions': deps_data,
                 'reward': int(reward),
                 'game_done': done,
                 'game_info': {k.replace('.', '_'): v for (k, v) in info.items()},
@@ -86,4 +113,5 @@ class ZGame:
 
             if done:
                 self.done()
+
                 break
