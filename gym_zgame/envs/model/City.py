@@ -19,28 +19,6 @@ class City:
         self.FILENAME = config_file
 
         self.neighborhoods = []
-        self._init_neighborhoods(loc_npc_range)
-        self._init_neighborhood_threats()
-        self.fear = 5
-
-        self.orig_fear = self.fear
-
-        self.resources = 20
-        self.delta_fear = 0
-        self.delta_resources = 0
-        self.score = 0
-        self.total_score = 0
-        self.turn = 0
-        self.max_turns = 14  # each turn represents one day
-        # Computed
-        self.orig_alive, self.orig_dead = self._get_original_state_metrics()
-        # CONSTANTS
-        self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
-                            DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
-                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY, DEPLOYMENTS.TESTING_CENTER_MAN,
-                            DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
-
-        # Keep summary stats up to date for ease
         self.num_npcs = 0
         self.num_alive = 0
         self.num_dead = 0
@@ -55,7 +33,30 @@ class City:
         self.num_moving = 0
         self.num_active = 0
         self.num_sickly = 0
+        self._init_neighborhoods(loc_npc_range)
+        self._init_neighborhood_threats()
+        self.fear = 5
+
+        self.orig_fear = self.fear
+
+        self.resources = 20
+        self.delta_fear = 0
+        self.delta_resources = 0
+        self.score = 0
+        self.total_score = 0
+        self.turn = 0
+        self.max_turns = 14  # each turn represents one day
         self.update_summary_stats()
+        # Computed
+        self.orig_alive, self.orig_dead = self._get_original_state_metrics()
+        # CONSTANTS
+        self.UPKEEP_DEPS = [DEPLOYMENTS.Z_CURE_CENTER_EXP, DEPLOYMENTS.Z_CURE_CENTER_FDA,
+                            DEPLOYMENTS.FLU_VACCINE_MAN, DEPLOYMENTS.PHEROMONES_MEAT,
+                            DEPLOYMENTS.FIREBOMB_BARRAGE, DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY, DEPLOYMENTS.TESTING_CENTER_MAN,
+                            DEPLOYMENTS.SUPPLY_DEPOT, DEPLOYMENTS.FACTORY]
+
+        # Keep summary stats up to date for ease
+
 
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
@@ -135,10 +136,8 @@ class City:
                               north_east, north_west, south_east, south_west]
 
     def get_num_npcs(self):
-        try:
-            return self.num_npcs
-        except:
-            return 0
+        return self.num_npcs
+
 
     def _init_neighborhood_threats(self):
         # Add 10 dead in a random location
@@ -956,9 +955,9 @@ class City:
         else:
             fear_adj_data = round(real_data * (random.randint(90,100)/100))
 
-        perc_of_npc = fear_adj_data / nbh.get_num_npcs()
+        perc_of_npc = fear_adj_data / nbh.get_num_npcs() if nbh.get_num_npcs() > 0 else 0
         # Find percentage value of 1 person in nbh
-        temp = 1.0/nbh.get_num_npcs()
+        temp = 1.0/nbh.get_num_npcs() if nbh.get_num_npcs() > 0 else 0
         if perc_of_npc < temp:
             return LEVELS.NONE
         elif perc_of_npc < 0.3:
