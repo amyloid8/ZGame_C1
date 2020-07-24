@@ -33,21 +33,7 @@ class DataAnalyzer:
 
     def graph_population(self):
         df = self.all_data
-        # ax1 = plt.gca()
-        # ax2 = plt.gca()
-        # ax3 = plt.gca()
-
-        # df.plot(kind='line', x='game ID', y='alive', color='green', ax=ax1)
-        # df.plot(kind='line', x='game ID', y='dead', color='red', ax=ax1)
-        # df.plot(kind='line', x='game ID', y='ashen', color='black', ax=ax1)
-        # df.plot(kind='line', x='game ID', y='human', color='green', ax=ax2)
-        # df.plot(kind='line', x='game ID', y='zombie', color='purple', ax=ax2)
-        # df.plot(kind='line', x='game ID', y='healthy', color='green', ax=ax3)
-        # df.plot(kind='line', x='game ID', y='flu', color='red', ax=ax3)
-        # df.plot(kind='line', x='game ID', y='immune', color='blue', ax=ax3)
-
-        # length = self.ids.count()
-        length = 10000
+        length = 1000000
         print(self.all_data)
         game_num = list(range(1,length+1))
         fig, axs = plt.subplots(3, sharex=True, sharey=True)

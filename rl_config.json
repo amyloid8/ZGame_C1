@@ -1,0 +1,6 @@
+{
+  "num_steps": 1000,
+  "num_envs": 4,
+  "max_turns": 14,
+  "collection_interval": 100
+}

@@ -5,6 +5,7 @@ from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common import make_vec_env
 from stable_baselines import A2C
+import json
 
 
 class ZGame:
@@ -14,19 +15,27 @@ class ZGame:
     OpenAI blog post: https://openai.com/blog/baselines-acktr-a2c/
     https://stable-baselines.readthedocs.io/en/master/modules/a2c.html
     """
-    def __init__(self, model_filename='rl-agent', num_steps=1000, num_envs=4, analysis_log_file='train_info.json'):
+    def __init__(self, model_filename='rl-agent', training_config='rl_config.json', analysis_log_file='train_info.json'):
         self.ENV_NAME = 'ZGame-v0'
         self.MODEL_FILENAME = model_filename
+        self.CONFIG_FILENAME = training_config
         self.ANALYSIS_FILENAME = analysis_log_file
         self.GAME_ID = uuid.uuid4()
         self.env = None
         self.current_actions = []
+        self.config = {}
+
+        with open(self.CONFIG_FILENAME) as file:
+            data = json.load(file)
+            self.config.update(data)
+
         self.turn = 0
-        self.max_turns = 14
+        self.max_turns = self.config["max_turns"]
         # Learning Parameters
         self._verbosity = 1
-        self.num_steps = 10000
-        self.num_envs = 10
+        self.num_steps = self.config["num_steps"]
+        self.num_envs = self.config["num_envs"]
+        self.collect_interval = self.config["collection_interval"]
         # Always do these actions upon start
         self._setup()
 
@@ -39,7 +48,6 @@ class ZGame:
         self.env.reset()
         # Report success
         print('Created new environment {0} with GameID: {1}'.format(self.ENV_NAME, self.GAME_ID))
-
 
     def done(self):
         print("Episode finished after {} turns".format(self.turn))

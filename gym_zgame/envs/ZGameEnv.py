@@ -11,13 +11,21 @@ from gym_zgame.envs.Print_Colors.PColor import PBack, PFore, PFont
 
 class ZGame(gym.Env):
 
-    def __init__(self, log_name = 'train_info.json'):
+    def __init__(self, log_name = 'train_info.json', config_name = 'rl_config.json'):
         # Tunable parameters
         self.play_type = PLAY_TYPE.MACHINE  # Defaults only, set in main classes
         self.render_mode = 'machine'
         self.LOG_FILENAME = log_name
+        self.CONFIG_FILENAME = config_name
+
+        self.config = {}
+        with open(self.CONFIG_FILENAME) as file:
+            data = json.load(file)
+            self.config.update(data)
+
         # CONSTANTS
-        self.MAX_TURNS = 14
+        self.MAX_TURNS = self.config["max_turns"]
+        self.collect_interval = self.config["collection_interval"]
         # Main parameters
         self.city = City()
         self.total_score = 0
@@ -34,6 +42,7 @@ class ZGame(gym.Env):
         self.end_stats = {}
         self.reward = []
 
+        self.collection_counter = 0
 
     def get_gen_info(self):
         # contains: {game
@@ -88,6 +97,7 @@ class ZGame(gym.Env):
         return obs
 
     def step(self, actions):
+        self.collection_counter += 1
         # Convert actions
         formatted_actions = self.decode_raw_action(actions=actions)
         # Adjudicate turn
@@ -102,7 +112,8 @@ class ZGame(gym.Env):
         obs = self.get_obs()
         info = {'turn': self.turn, 'step_reward': score, 'total_reward': self.total_score}
         self.reward = score
-        self.collect_stats(self.LOG_FILENAME) # goes into train_info.json
+        if self.collection_counter == self.collect_interval:
+            self.collect_stats(self.LOG_FILENAME) # goes into train_info.json
         return obs, self.total_score, self.done, info
 
     def _do_turn(self, actions):
