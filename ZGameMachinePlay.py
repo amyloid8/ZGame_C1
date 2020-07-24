@@ -38,13 +38,17 @@ class ZGame:
         self._setup()
 
     def collect_end_stats(self):
-        general_stats = self.env.get_end_info(self.env)
-        city_stats = self.env.get_city_info(self.env)
+        general_stats = self.env.get_gen_info()
+        city_stats = self.env.get_city_info()
         all_stats = {}
         all_stats.update(city_stats)
         all_stats.update(general_stats)
-        all_stats.update({'total reward': self.total_reward})
-        return all_stats
+        all_stats.update({'total reward': self.total_reward, 'game ID': str(self.GAME_ID)})
+
+        data_to_log = all_stats
+
+        with open(self.ANALYSIS_FILE_NAME, 'a') as f_:
+            f_.write(json.dumps(data_to_log) + '\n')
 
     def _setup(self):
         # Game parameters
@@ -113,5 +117,5 @@ class ZGame:
 
             if done:
                 self.done()
-
+                self.collect_end_stats()
                 break

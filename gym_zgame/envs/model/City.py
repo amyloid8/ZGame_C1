@@ -286,7 +286,7 @@ class City:
         self.neighborhoods[nbh_1_index].add_deployment(dep_1)
         self.neighborhoods[nbh_2_index].add_deployment(dep_2)
         #recordkeeping
-        self.all_deployments.append([dep_1, dep_2])
+        self.all_deployments.extend([dep_1, dep_2])
 
     def update_states(self):
         self._update_trackers()

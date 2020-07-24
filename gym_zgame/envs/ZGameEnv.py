@@ -5,7 +5,7 @@ from gym_zgame.envs.enums import PLAY_TYPE
 from gym_zgame.envs.model.City import City
 from gym_zgame.envs.enums.PLAYER_ACTIONS import DEPLOYMENTS, LOCATIONS
 from gym_zgame.envs.Print_Colors.PColor import PBack, PFore, PFont
-from ZGameMachinePlay import ZGame
+
 
 
 class ZGame(gym.Env):
@@ -38,7 +38,6 @@ class ZGame(gym.Env):
         # actions,
         # # total alive, dead, ashen, human, zombie, healthy, flu, immune}
         info = {
-            'game_id': str(self.GAME_ID),
             'total score': self.city.total_score,
             'total deployments': self.city.all_deployments
         }
