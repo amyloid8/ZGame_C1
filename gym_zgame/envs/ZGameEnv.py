@@ -6,7 +6,9 @@ from gym_zgame.envs.enums import PLAY_TYPE
 from gym_zgame.envs.model.City import City
 from gym_zgame.envs.enums.PLAYER_ACTIONS import DEPLOYMENTS, LOCATIONS
 from gym_zgame.envs.Print_Colors.PColor import PBack, PFore, PFont
-
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 
 
 class ZGame(gym.Env):
@@ -43,6 +45,7 @@ class ZGame(gym.Env):
         self.reward = []
 
         self.collection_counter = 0
+        self.step_counter = 0
 
     def get_gen_info(self):
         # contains: {game
@@ -73,15 +76,32 @@ class ZGame(gym.Env):
         }
         return info
 
-    def collect_stats(self, filename):
+    def collect_stats(self):
         self.end_stats.update(self.get_gen_info())
         self.end_stats.update(self.get_city_info())
         self.end_stats.update({'reward': self.reward})
         self.end_stats.update({'total_score': self.total_score})
-        data_to_log = self.end_stats
 
+    def write_to_log(self, filename):
         with open(filename, 'a') as f_:
-            f_.write(json.dumps(data_to_log) + '\n')
+            f_.write(json.dumps(self.end_stats) + '\n')
+        self.end_stats = {}
+
+    # def live_graph(self):
+    #
+    #     # index = count()
+    #     self.animate(x_values, y_values)
+
+    # def animate(self):
+    #     x_values = [range(0,self.step_counter)]
+    #     y_values = self.city.num_alive
+    #     plt.cla()
+    #     plt.plot(x_values, y_values)
+    #
+    #     ani = animation.FuncAnimation(plt.gcf(), func=True)
+    #
+    #     plt.tight_layout()
+    #     plt.show()
 
     def reset(self):
         self.city = City()
@@ -98,6 +118,7 @@ class ZGame(gym.Env):
 
     def step(self, actions):
         self.collection_counter += 1
+        self.step_counter += 1
         # Convert actions
         formatted_actions = self.decode_raw_action(actions=actions)
         # Adjudicate turn
@@ -112,8 +133,10 @@ class ZGame(gym.Env):
         obs = self.get_obs()
         info = {'turn': self.turn, 'step_reward': score, 'total_reward': self.total_score}
         self.reward = score
+        self.collect_stats()
+        # self.animate()
         if self.collection_counter == self.collect_interval:
-            self.collect_stats(self.LOG_FILENAME) # goes into train_info.json
+            self.write_to_log(self.LOG_FILENAME)
         return obs, self.total_score, self.done, info
 
     def _do_turn(self, actions):
