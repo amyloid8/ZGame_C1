@@ -592,7 +592,7 @@ class City:
                 rise_prob = min(1.0, rise_prob * 10.0)
             if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
                 bite_prob = min(1.0, bite_prob * 0.75)
-                fight_back_prob = max(1.0, fight_back_prob * 0.75)
+                fight_back_prob = min(1.0, fight_back_prob * 0.75)
             if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
                 bite_prob = min(1.0, bite_prob * 0.25)
                 fight_back_prob = min(1.0, fight_back_prob * 0.25)
