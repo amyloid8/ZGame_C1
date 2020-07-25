@@ -8,7 +8,10 @@ from gym_zgame.envs.enums.PLAYER_ACTIONS import DEPLOYMENTS, LOCATIONS
 from gym_zgame.envs.Print_Colors.PColor import PBack, PFore, PFont
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import matplotlib.animation as animation
+import time
+import multiprocessing
+import random
+from multiprocessing import Queue
 
 
 class ZGame(gym.Env):
@@ -46,6 +49,16 @@ class ZGame(gym.Env):
 
         self.collection_counter = 0
         self.step_counter = 0
+
+        self.x_values = []
+        # self.y_values = []
+        self.alive = []
+        self.dead = []
+        self.ashen = []
+
+        self.q = Queue()
+        multiprocessing.Process(target=self.plot_graph, args=(self.q,)).start()
+        print('initialize finish')
 
     def get_gen_info(self):
         # contains: {game
@@ -87,21 +100,57 @@ class ZGame(gym.Env):
             f_.write(json.dumps(self.end_stats) + '\n')
         self.end_stats = {}
 
-    # def live_graph(self):
-    #
-    #     # index = count()
-    #     self.animate(x_values, y_values)
 
-    # def animate(self):
-    #     x_values = [range(0,self.step_counter)]
-    #     y_values = self.city.num_alive
-    #     plt.cla()
-    #     plt.plot(x_values, y_values)
-    #
-    #     ani = animation.FuncAnimation(plt.gcf(), func=True)
-    #
-    #     plt.tight_layout()
-    #     plt.show()
+
+
+    def plot_graph(self, q):
+        print("entered plot_graph()")
+
+        fig, axs = plt.subplots(3, sharex=True, sharey=True)
+        fig.suptitle('NPC Trends')
+        def animate(i):
+            #         x_values.append(next(index))
+            #         y_values.append(random.randint(0, 5))
+            alive, dead, ashen = q.get()
+            # plt.cla()
+            # plt.plot(alive, dead, ashen)
+
+
+            axs[0].plot(alive)
+            # axs[0].plot(game_num, self.dead)
+            # axs[0].plot(game_num, self.ashen)
+            axs[1].plot(dead)
+            # axs[1].plot(game_num, self.zombie)
+            axs[2].plot(ashen)
+            # axs[2].plot(game_num, self.flu)
+            # axs[2].plot(game_num, self.immune)
+
+
+
+        # axs[0].legend(['Alive', 'Dead', 'Ashen'])
+        # axs[1].legend(['Human', 'Zombie'])
+        # axs[2].legend(['Healthy', 'Flu', 'Immune'])
+        # plt.xlabel('Steps')
+        # plt.ylabel('Number of NPC type')
+
+        ani = FuncAnimation(plt.gcf(), animate)
+        plt.tight_layout()
+        plt.show()
+        print("exiting plot_graph() process")
+
+    def process_graph_data(self):
+        # for i in range(self.collect_interval):
+        self.x_values.append(self.step_counter)
+        self.alive.append(self.city.num_alive)
+        self.dead.append(self.city.num_dead)
+        self.ashen.append(self.city.num_ashen)
+        # if len(self.alive) > 200:
+        #     self.alive.pop(0)
+        #     self.dead.pop(0)
+        #     self.ashen.pop(0)
+        # time.sleep(1)
+        self.q.put([self.alive, self.dead, self.ashen])
+
 
     def reset(self):
         self.city = City()
@@ -134,9 +183,13 @@ class ZGame(gym.Env):
         info = {'turn': self.turn, 'step_reward': score, 'total_reward': self.total_score}
         self.reward = score
         self.collect_stats()
-        # self.animate()
+
+
         if self.collection_counter == self.collect_interval:
             self.write_to_log(self.LOG_FILENAME)
+            self.collection_counter = 0
+            self.process_graph_data()
+
         return obs, self.total_score, self.done, info
 
     def _do_turn(self, actions):
