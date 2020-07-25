@@ -15,7 +15,7 @@ class ZGame:
     OpenAI blog post: https://openai.com/blog/baselines-acktr-a2c/
     https://stable-baselines.readthedocs.io/en/master/modules/a2c.html
     """
-    def __init__(self, model_filename='rl-agent', training_config='rl_config.json', analysis_log_file='train_info.json'):
+    def __init__(self, model_filename='rl-agent', training_config='play_config.json', analysis_log_file='train_info.json'):
         self.ENV_NAME = 'ZGame-v0'
         self.MODEL_FILENAME = model_filename
         self.CONFIG_FILENAME = training_config
@@ -35,7 +35,7 @@ class ZGame:
         self._verbosity = 1
         self.num_steps = self.config["num_steps"]
         self.num_envs = self.config["num_envs"]
-        self.collect_interval = self.config["collection_interval"]
+        self.collect_interval = self.config["train_collection_interval"]
         # Always do these actions upon start
         self._setup()
 

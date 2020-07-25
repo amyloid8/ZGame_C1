@@ -15,9 +15,14 @@ class ZGame:
     OpenAI blog post: https://openai.com/blog/baselines-acktr-a2c/
     https://stable-baselines.readthedocs.io/en/master/modules/a2c.html
     """
-    def __init__(self, model_filename, data_log_file='data_log.json', analysis_log_file='game_info.json'):
+    def __init__(self, model_filename, data_log_file='data_log.json', analysis_log_file='game_info.json', play_config = 'play_config.json'):
         self.ENV_NAME = 'ZGame-v0'
         self.DATA_LOG_FILE_NAME = data_log_file
+        self.CONFIG_FILENAME = play_config
+        self.config = {}
+        with open(self.CONFIG_FILENAME) as file:
+            data = json.load(file)
+            self.config.update(data)
 
         #contains: {game id, total score, total reward, list of actions,
         # total alive, dead, ashen, human, zombie, healthy, flu, immune}
@@ -29,7 +34,7 @@ class ZGame:
         self.current_actions = []
         self.all_deployments = []
         self.turn = 0
-        self.max_turns = 14
+        self.max_turns = self.config["max_turns"]
         self.total_reward = 0
         # Learning Parameters
         self._verbosity = 1

@@ -16,22 +16,26 @@ from multiprocessing import Queue
 
 class ZGame(gym.Env):
 
-    def __init__(self, demo=True, log_name = 'train_info.json', config_name = 'rl_config.json'):
+    def __init__(self, demo=True, rl_log_name = 'train_info.json', rl_config_name = 'play_config.json'):
         # Tunable parameters
-        self.demo = demo
+
         self.play_type = PLAY_TYPE.MACHINE  # Defaults only, set in main classes
         self.render_mode = 'machine'
-        self.LOG_FILENAME = log_name
-        self.CONFIG_FILENAME = config_name
+        self.LOG_FILENAME = rl_log_name
+        self.CONFIG_FILENAME = rl_config_name
 
         self.config = {}
         with open(self.CONFIG_FILENAME) as file:
             data = json.load(file)
             self.config.update(data)
 
+        self.mode = self.config["mode"]
+        self.demo = bool(self.config["demo"])
+
         # CONSTANTS
         self.MAX_TURNS = self.config["max_turns"]
-        self.collect_interval = self.config["collection_interval"]
+        self.collect_interval = 0
+
         # Main parameters
         self.city = City()
         self.total_score = 0
@@ -49,6 +53,7 @@ class ZGame(gym.Env):
         self.reward = []
 
         self.collection_counter = 0
+
         self.step_counter = 0
 
         self.x_counter = []
@@ -68,6 +73,7 @@ class ZGame(gym.Env):
         if self.demo == True:
             self.q_npc = Queue()
             multiprocessing.Process(target=self.plot_npc_graph, args=(self.q_npc,)).start()
+
             self.q_score = Queue()
             multiprocessing.Process(target=self.plot_score_graph, args=(self.q_score,)).start()
 
@@ -119,18 +125,19 @@ class ZGame(gym.Env):
             alive, dead, ashen, human, zombie, healthy, flu, immune = q_npc.get()
             # plt.cla()
             # plt.plot(alive, dead, ashen)
-            axs[0].plot(alive)
-            axs[0].plot(dead)
-            axs[0].plot(ashen)
-            axs[1].plot(human)
-            axs[1].plot(zombie)
-            axs[2].plot(healthy)
-            axs[2].plot(flu)
-            axs[2].plot(immune)
+            axs[0].plot(alive, color='blue')
+            axs[0].plot(dead, color='orange')
+            axs[0].plot(ashen, color='green')
+            axs[1].plot(human, color='blue')
+            axs[1].plot(zombie, color='orange')
+            axs[2].plot(healthy, color='blue')
+            axs[2].plot(flu, color='orange')
+            axs[2].plot(immune, color='green')
 
             axs[0].legend(['Alive', 'Dead', 'Ashen'])
             axs[1].legend(['Human', 'Zombie'])
             axs[2].legend(['Healthy', 'Flu', 'Immune'])
+
 
         plt.xlabel('Every game')
         plt.ylabel('Number of NPC type')
@@ -161,6 +168,7 @@ class ZGame(gym.Env):
                     self.human, self.zombie,
                     self.healthy, self.flu, self.immune])
 
+#TODO
     # plots deployment uses
     def plot_score_graph(self, q_score):
         print("entered plot_deployment_graph()")
@@ -172,22 +180,6 @@ class ZGame(gym.Env):
             score = q_score.get()
             plt.plot(score)
 
-            # alive, dead, ashen, human, zombie, healthy, flu, immune = q.get()
-            # # plt.cla()
-            # # plt.plot(alive, dead, ashen)
-            # axs[0].plot(alive)
-            # axs[0].plot(dead)
-            # axs[0].plot(ashen)
-            # axs[1].plot(human)
-            # axs[1].plot(zombie)
-            # axs[2].plot(healthy)
-            # axs[2].plot(flu)
-            # axs[2].plot(immune)
-            #
-            # axs[0].legend(['Alive', 'Dead', 'Ashen'])
-            # axs[1].legend(['Human', 'Zombie'])
-            # axs[2].legend(['Healthy', 'Flu', 'Immune'])
-
         plt.xlabel('Every 14 steps')
         plt.ylabel('Score')
 
@@ -195,7 +187,7 @@ class ZGame(gym.Env):
         plt.tight_layout()
         plt.show()
         print("exiting plot_graph() process")
-
+#TODO
     def process_score_graph_data(self):
         # for i in range(self.collect_interval):
         # if len(self.alive) > 200:
@@ -206,7 +198,7 @@ class ZGame(gym.Env):
 
         # x values set during initialization >>> x_deployments
         self.score_hist.append(self.city.total_score)
-        self.q_score.put([self.score_hist])
+        self.q_score.put(self.score_hist)
 
 
 
@@ -241,6 +233,11 @@ class ZGame(gym.Env):
         info = {'turn': self.turn, 'step_reward': score, 'total_reward': self.total_score}
         self.reward = score
         self.collect_stats()
+
+        if self.mode == "train":
+            self.collect_interval = self.config["train_collection_interval"]
+        else:  # for human/machine play, not training
+            self.collect_interval = self.config["play_collection_interval"]
 
         if self.collection_counter == self.collect_interval:
             self.write_to_log(self.LOG_FILENAME)

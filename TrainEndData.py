@@ -7,10 +7,18 @@ from gym_zgame.envs.enums.PLAYER_ACTIONS import DEPLOYMENTS
 
 class DataAnalyzer:
 
-    def __init__(self, filename):
-
-        temp = pd.read_json(filename, lines=True)
+    def __init__(self, log_filename, config_filename):
+        self.CONFIG_FILENAME = config_filename
+        temp = pd.read_json(log_filename, lines=True)
         self.all_data = pd.DataFrame(temp)
+
+        self.config = {}
+        with open(self.CONFIG_FILENAME) as file:
+            data = json.load(file)
+            self.config.update(data)
+        self.steps = self.config["num_steps"]
+        self.envs = self.config["num_envs"]
+        self.interval = self.config["train_collection_interval"]
 
         # self.ids = self.all_data['game ID']
         self.score = self.all_data['total_score']
@@ -33,7 +41,7 @@ class DataAnalyzer:
 
     def graph_population(self):
         df = self.all_data
-        length = 1000000
+        length = (self.steps * self.envs)//self.interval
         print(self.all_data)
         game_num = list(range(1,length+1))
         fig, axs = plt.subplots(3, sharex=True, sharey=True)
@@ -65,5 +73,5 @@ class DataAnalyzer:
         # plt.show()
 
 if __name__ == '__main__':
-    analyzer = DataAnalyzer('train_info.json')
+    analyzer = DataAnalyzer('train_info.json', 'play_config.json')
     analyzer.graph_population()
