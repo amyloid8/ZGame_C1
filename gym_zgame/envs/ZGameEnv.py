@@ -16,8 +16,9 @@ from multiprocessing import Queue
 
 class ZGame(gym.Env):
 
-    def __init__(self, log_name = 'train_info.json', config_name = 'rl_config.json'):
+    def __init__(self, demo=True, log_name = 'train_info.json', config_name = 'rl_config.json'):
         # Tunable parameters
+        self.demo = demo
         self.play_type = PLAY_TYPE.MACHINE  # Defaults only, set in main classes
         self.render_mode = 'machine'
         self.LOG_FILENAME = log_name
@@ -50,24 +51,32 @@ class ZGame(gym.Env):
         self.collection_counter = 0
         self.step_counter = 0
 
-        self.x_values = []
+        self.x_counter = []
+
         # self.y_values = []
         self.alive = []
         self.dead = []
         self.ashen = []
+        self.human = []
+        self.zombie = []
+        self.healthy = []
+        self.flu = []
+        self.immune = []
 
-        self.q = Queue()
-        multiprocessing.Process(target=self.plot_graph, args=(self.q,)).start()
+        self.score_hist = []
+
+        if self.demo == True:
+            self.q_npc = Queue()
+            multiprocessing.Process(target=self.plot_npc_graph, args=(self.q_npc,)).start()
+            self.q_score = Queue()
+            multiprocessing.Process(target=self.plot_score_graph, args=(self.q_score,)).start()
+
         print('initialize finish')
 
     def get_gen_info(self):
-        # contains: {game
-        # id?, total
-        # score, total
-        # reward, list
-        # of
-        # actions,
-        # # total alive, dead, ashen, human, zombie, healthy, flu, immune}
+        # contains: {
+        # total score, reward, list of actions,
+        # alive, dead, ashen, human, zombie, healthy, flu}
         info = {
             'score': self.city.total_score,
             'deployments': self.city.all_deployments,
@@ -100,56 +109,105 @@ class ZGame(gym.Env):
             f_.write(json.dumps(self.end_stats) + '\n')
         self.end_stats = {}
 
-
-
-
-    def plot_graph(self, q):
-        print("entered plot_graph()")
-
+    # plots npc stats
+    def plot_npc_graph(self, q_npc):
+        print("entered plot_npc_graph()")
         fig, axs = plt.subplots(3, sharex=True, sharey=True)
         fig.suptitle('NPC Trends')
+
         def animate(i):
-            #         x_values.append(next(index))
-            #         y_values.append(random.randint(0, 5))
-            alive, dead, ashen = q.get()
+            alive, dead, ashen, human, zombie, healthy, flu, immune = q_npc.get()
             # plt.cla()
             # plt.plot(alive, dead, ashen)
-
-
             axs[0].plot(alive)
-            # axs[0].plot(game_num, self.dead)
-            # axs[0].plot(game_num, self.ashen)
-            axs[1].plot(dead)
-            # axs[1].plot(game_num, self.zombie)
-            axs[2].plot(ashen)
-            # axs[2].plot(game_num, self.flu)
-            # axs[2].plot(game_num, self.immune)
+            axs[0].plot(dead)
+            axs[0].plot(ashen)
+            axs[1].plot(human)
+            axs[1].plot(zombie)
+            axs[2].plot(healthy)
+            axs[2].plot(flu)
+            axs[2].plot(immune)
 
+            axs[0].legend(['Alive', 'Dead', 'Ashen'])
+            axs[1].legend(['Human', 'Zombie'])
+            axs[2].legend(['Healthy', 'Flu', 'Immune'])
 
-
-        # axs[0].legend(['Alive', 'Dead', 'Ashen'])
-        # axs[1].legend(['Human', 'Zombie'])
-        # axs[2].legend(['Healthy', 'Flu', 'Immune'])
-        # plt.xlabel('Steps')
-        # plt.ylabel('Number of NPC type')
+        plt.xlabel('Every game')
+        plt.ylabel('Number of NPC type')
 
         ani = FuncAnimation(plt.gcf(), animate)
         plt.tight_layout()
         plt.show()
         print("exiting plot_graph() process")
 
-    def process_graph_data(self):
+    def process_npc_graph_data(self):
         # for i in range(self.collect_interval):
-        self.x_values.append(self.step_counter)
+        self.x_counter.append(self.step_counter)
         self.alive.append(self.city.num_alive)
         self.dead.append(self.city.num_dead)
         self.ashen.append(self.city.num_ashen)
+        self.human.append(self.city.num_human)
+        self.zombie.append(self.city.num_zombie)
+        self.healthy.append(self.city.num_healthy)
+        self.flu.append(self.city.num_flu)
+        self.immune.append(self.city.num_immune)
+
         # if len(self.alive) > 200:
         #     self.alive.pop(0)
         #     self.dead.pop(0)
         #     self.ashen.pop(0)
         # time.sleep(1)
-        self.q.put([self.alive, self.dead, self.ashen])
+        self.q_npc.put([self.alive, self.dead, self.ashen,
+                    self.human, self.zombie,
+                    self.healthy, self.flu, self.immune])
+
+    # plots deployment uses
+    def plot_score_graph(self, q_score):
+        print("entered plot_deployment_graph()")
+
+        plt.suptitle('Score')
+
+        def animate(i):
+
+            score = q_score.get()
+            plt.plot(score)
+
+            # alive, dead, ashen, human, zombie, healthy, flu, immune = q.get()
+            # # plt.cla()
+            # # plt.plot(alive, dead, ashen)
+            # axs[0].plot(alive)
+            # axs[0].plot(dead)
+            # axs[0].plot(ashen)
+            # axs[1].plot(human)
+            # axs[1].plot(zombie)
+            # axs[2].plot(healthy)
+            # axs[2].plot(flu)
+            # axs[2].plot(immune)
+            #
+            # axs[0].legend(['Alive', 'Dead', 'Ashen'])
+            # axs[1].legend(['Human', 'Zombie'])
+            # axs[2].legend(['Healthy', 'Flu', 'Immune'])
+
+        plt.xlabel('Every 14 steps')
+        plt.ylabel('Score')
+
+        ani = FuncAnimation(plt.gcf(), animate)
+        plt.tight_layout()
+        plt.show()
+        print("exiting plot_graph() process")
+
+    def process_score_graph_data(self):
+        # for i in range(self.collect_interval):
+        # if len(self.alive) > 200:
+        #     self.alive.pop(0)
+        #     self.dead.pop(0)
+        #     self.ashen.pop(0)
+        # time.sleep(1)
+
+        # x values set during initialization >>> x_deployments
+        self.score_hist.append(self.city.total_score)
+        self.q_score.put([self.score_hist])
+
 
 
     def reset(self):
@@ -184,11 +242,12 @@ class ZGame(gym.Env):
         self.reward = score
         self.collect_stats()
 
-
         if self.collection_counter == self.collect_interval:
             self.write_to_log(self.LOG_FILENAME)
             self.collection_counter = 0
-            self.process_graph_data()
+            if self.demo == True:
+                self.process_npc_graph_data()
+                self.process_score_graph_data()
 
         return obs, self.total_score, self.done, info
 
