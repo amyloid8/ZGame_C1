@@ -237,26 +237,6 @@ class City:
                     nbh_index = i
             self._add_building_to_location(nbh_index, dep) if add == 0 else self._remove_building_from_location(nbh_index, dep)
             self.update_states()
-        '''add_1 = actions[0][0]  
-        loc_1 = actions[0][1]  # Unpack for readability
-        dep_1 = actions[0][2]  # Unpack for readability
-        add_2 = actions[1][0]
-        loc_2 = actions[1][1]  # Unpack for readability
-        dep_2 = actions[1][2]  # Unpack for readability
-        add_1, loc_1, dep_1 = self._check_removal(add_1, loc_1, dep_1)
-        add_2, loc_2, dep_2 = self._check_removal(add_2, loc_2, dep_2)
-        nbh_1_index = 0  # Get location indexes for easier handling
-        nbh_2_index = 0  # Get location indexes for easier handling
-        for i in range(len(self.neighborhoods)):
-            nbh = self.neighborhoods[i]
-            if loc_1 is nbh.location:
-                nbh_1_index = i
-            if loc_2 is nbh.location:
-                nbh_2_index = i
-        # Process turn
-        self._add_building_to_location(nbh_1_index, dep_1) if add_1 == 0 else self._remove_building_from_location(nbh_1_index, dep_1)
-        self._add_building_to_location(nbh_2_index, dep_2) if add_2 == 0 else self._remove_building_from_location(nbh_2_index, dep_2)'''
-        self.update_states()
         self.reset_bags()
         self.adjust_bags_for_deployments()
         self.process_moves()
@@ -504,6 +484,7 @@ class City:
         
         #firebomb destroys nbh deployments
         nbh.current_deployments = []
+
     def _update_natural_states(self):
         self._society_transitions()
         self._flu_transitions()
@@ -592,29 +573,29 @@ class City:
             trans_probs = nbh.compute_baseline_trans_probs()
 
             # Get zombie based transitions probabilities
-            turn_prob = trans_probs.get('recover')
-            devour_prob = trans_probs.get('pneumonia')
-            bite_prob = trans_probs.get('incubate')
-            fight_back_prob = trans_probs.get('fumes')
-            collapse_prob = trans_probs.get('cough')
-            rise_prob = trans_probs.get('mutate')
+            turn_prob = trans_probs.get('turn')
+            devour_prob = trans_probs.get('devour')
+            bite_prob = trans_probs.get('bite')
+            fight_back_prob = trans_probs.get('fight_back')
+            collapse_prob = trans_probs.get('collapse')
+            rise_prob = trans_probs.get('rise')
 
             # Update based on deployments
             if DEPLOYMENTS.BITE_CENTER_DISINFECT in nbh.current_deployments:
-                turn_prob = max(1.0, turn_prob * 0.5)
+                turn_prob = min(1.0, turn_prob * 0.5)
             if DEPLOYMENTS.BITE_CENTER_AMPUTATE in nbh.current_deployments:
-                turn_prob = max(1.0, turn_prob * 0.05)
+                turn_prob = min(1.0, turn_prob * 0.05)
             if DEPLOYMENTS.BROADCAST_CALL_TO_ARMS in nbh.current_deployments:
-                fight_back_prob = max(1.0, fight_back_prob * 5.0)
-                devour_prob = max(1.0, devour_prob * 1.25)
+                fight_back_prob = min(1.0, fight_back_prob * 5.0)
+                devour_prob = min(1.0, devour_prob * 1.25)
             if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.current_deployments:
-                rise_prob = max(1.0, rise_prob * 10.0)
+                rise_prob = min(1.0, rise_prob * 10.0)
             if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
-                bite_prob = max(1.0, bite_prob * 0.75)
-                fight_back_prob = max(1.0, fight_back_prob * 0.75)
+                bite_prob = min(1.0, bite_prob * 0.75)
+                fight_back_prob = min(1.0, fight_back_prob * 0.75)
             if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
-                bite_prob = max(1.0, bite_prob * 0.25)
-                fight_back_prob = max(1.0, fight_back_prob * 0.25)
+                bite_prob = min(1.0, bite_prob * 0.25)
+                fight_back_prob = min(1.0, fight_back_prob * 0.25)
 
             # Zombie Laws
             for npc in nbh.NPCs:
@@ -647,7 +628,7 @@ class City:
         for nbh in self.neighborhoods:
             for npc in nbh.NPCs:
                 npc.empty_bag()  # empty everyone's bag
-                if npc.state_dead is not NPC_STATES_DEAD.DEAD:
+                if npc.state_dead is not NPC_STATES_DEAD.ASHEN:
                     npc.set_init_bag_alive()  # if alive, give default bag
                 # Zombie want to move toward the active people around them
                 # Find number active in adj neighborhood
