@@ -353,7 +353,7 @@ class City:
                 self._art_trans_z_cure_center_fda(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.Z_CURE_CENTER_FDA))
             if DEPLOYMENTS.Z_CURE_CENTER_EXP in nbh.current_deployments:
                 self._art_trans_z_cure_center_exp(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.Z_CURE_CENTER_EXP))
-            if dep is DEPLOYMENTS.FLU_VACCINE_OPT:
+            if DEPLOYMENTS.FLU_VACCINE_OPT in nbh.current_deployments:
                 self._art_trans_flu_vaccine_free(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.FLU_VACCINE_OPT))
             if DEPLOYMENTS.FLU_VACCINE_MAN in nbh.current_deployments:
                 self._art_trans_flu_vaccine_man(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.FLU_VACCINE_MAN))
@@ -935,9 +935,7 @@ class City:
 
     def remove_onetime_deployments(self):
         for nbh_index in range(len(self.neighborhoods)):
-            for dep in self.neighborhoods[nbh_index]:
-                if dep in (DEPLOYMENTS.RALLY_POINT_FULL, DEPLOYMENTS.RALLY_POINT_OPT):
-                    self.neighborhoods[nbh_index].remove_deployment(dep)
+            self.neighborhoods[nbh_index].current_deployments = [x for x in self.neighborhoods[nbh_index].current_deployments if x != DEPLOYMENTS.RALLY_POINT_FULL and x != DEPLOYMENTS.RALLY_POINT_OPT]
 
     def check_done(self):
         return self.turn >= self.max_turns
