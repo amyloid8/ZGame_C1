@@ -236,10 +236,12 @@ class City:
                 if loc is nbh.location:
                     nbh_index = i
             self._add_building_to_location(nbh_index, dep) if add == 0 else self._remove_building_from_location(nbh_index, dep)
-            self.update_states()
+        
+        self.update_states()
         self.reset_bags()
         self.adjust_bags_for_deployments()
         self.process_moves()
+        self.remove_onetime_deployments()
         # Update state info
         done = self.check_done()
         self.update_summary_stats()
@@ -930,6 +932,12 @@ class City:
         if random.random() <= prob_of_move:
             nbh_old.remove_NPC(NPC)
             nbh_new.add_NPC(NPC)
+
+    def remove_onetime_deployments(self):
+        for nbh_index in range(len(self.neighborhoods)):
+            for dep in self.neighborhoods[nbh_index]:
+                if dep in (DEPLOYMENTS.RALLY_POINT_FULL, DEPLOYMENTS.RALLY_POINT_OPT):
+                    self.neighborhoods[nbh_index].remove_deployment(dep)
 
     def check_done(self):
         return self.turn >= self.max_turns
