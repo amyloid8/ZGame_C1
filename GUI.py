@@ -12,6 +12,8 @@ class GUI(Frame):
 
     def __init__(self, zgame, master):
         super(GUI, self).__init__(master)
+        self.ar1=0
+        self.ar2=0
         self.env = zgame.env
         self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
         self.GAME_ID = zgame.GAME_ID
@@ -21,7 +23,14 @@ class GUI(Frame):
         self.grid()
         self.env.reset()
         self.create_widgets()
-
+    def setAR1(self, number):
+        self.ar1=number
+        print(self.ar1)
+        print(number)
+    def setAR2(self, number):
+        self.ar2=number
+        print(self.ar2)
+        print(number)
     def create_widgets(self):
         # cmd line UI
         print(self.env.render(mode='human'))
@@ -53,9 +62,9 @@ class GUI(Frame):
         str = 'Turn Score: {0} (Total Score: {1})'.format(self.score, self.total_score) \
               + '\nLiving at Start: {}'.format(self.orig_alive) \
               + '\nDead at Start: {}'.format(self.orig_dead)
-        Label(right, text=str, justify=LEFT, bg='#b886af').grid(row=6, column=3, rowspan=3, columnspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text=str, justify=LEFT, bg='#b886af').grid(row=6, column=2, rowspan=3, columnspan=4,padx=10,pady=10, ipadx=5,ipady=5)
         Label(right, text="Deployments", bg='#e32770').grid(row=0, column=0,padx=10,pady=10, ipadx=5,ipady=5)
-        Label(right, text="Locations", bg='#e32770').grid(row=0, column=1, columnspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Locations", bg='#e32770').grid(row=0, column=1, columnspan=1,padx=10,pady=10, ipadx=5,ipady=5)
         loc_str = ""
         for i in range(9):
             if i  is 8:
@@ -63,7 +72,7 @@ class GUI(Frame):
             else:
                 loc_str += "{0} - {1}\n".format(LOCATIONS(i).value, LOCATIONS(i).name)
 
-        Label(right, text=loc_str, justify=LEFT,bg='#dfcec2').grid(row=1, column=1, rowspan=10, columnspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text=loc_str, justify=LEFT,bg='#dfcec2').grid(row=1, column=1, rowspan=10, columnspan=1,padx=10,pady=10, ipadx=5,ipady=5)
         dep_str = ""
         for i in range(25):
             if i is 24:
@@ -73,27 +82,31 @@ class GUI(Frame):
         Label(right, text=dep_str, justify=LEFT,bg='#dfcec2').grid(row=1, column=0, rowspan=24, padx=10,pady=10, ipadx=5,ipady=5)
 
 
-        Label(right, text="Location 1", bg='#5e817b').grid(row=14, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Location 1", bg='#5e817b').grid(row=14, column=2, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
         self.loc1 = Entry(right, bg='#5e817b')
-        self.loc1.grid(row=14, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.loc1.grid(row=14, column=4, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Label(right, text="Deployment 1", bg='#5e817b').grid(row=16, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Deployment 1", bg='#5e817b').grid(row=16, column=2, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
         self.dep1 = Entry(right, bg='#5e817b')
-        self.dep1.grid(row=16, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.dep1.grid(row=16, column=4, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Label(right, text="Location 2", bg='#5e817b').grid(row=18, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Location 2", bg='#5e817b').grid(row=18, column=2, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
         self.loc2 = Entry(right, bg='#5e817b')
-        self.loc2.grid(row=18, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.loc2.grid(row=18, column=4, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Label(right, text="Deployment 2", bg='#5e817b').grid(row=20, column=1, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Deployment 2", bg='#5e817b').grid(row=20, column=2, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
         self.dep2 = Entry(right, bg='#5e817b')
-        self.dep2.grid(row=20, column=3, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.dep2.grid(row=20, column=4, columnspan=2, rowspan=2,padx=10,pady=10)
 
-        Button(right, text="Next step", command=self.update,height = 2, width = 40, bg='#b8ac86').grid(row=24, column=1, columnspan=4,rowspan=2,padx=10,pady=10)
+        Button(right, text="Next step", command=self.update,height = 2, width = 40, bg='#b8ac86').grid(row=24, column=1, columnspan=6,rowspan=2,padx=10,pady=10)
         Button(right, text="Quit", command=self.quit,height = 2, width = 25, bg='#b8ac86').grid(row=0, column=3, columnspan=2,rowspan=1,padx=10,pady=10)
         v = IntVar()
-        Radiobutton(right, variable=v, value=1, text="Add", padx=20, command=print("hello"), indicatoron=0,width=5).grid(column=1, row=15)
-        Radiobutton(right, variable=v, value=2, text="Remove", padx=20, command=print("hello"), indicatoron=0,width=5).grid(column=1, row=16)
+        x=IntVar()
+        Radiobutton(right,bg='#5e817b',variable=v, value=1, text="Add", padx=20, command=self.setAR1(1), indicatoron=0, width=5).grid(column=1, row=14, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Radiobutton(right, bg='#5e817b',variable=v, value=2, text="Remove", padx=20, command=self.setAR1(0), indicatoron=0,width=5).grid(column=1, row=16, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Radiobutton(right, bg='#5e817b', variable=x, value=3, text="Add", padx=20, command=self.setAR2(1), indicatoron=0,width=5).grid(column=1, row=18, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
+        Radiobutton(right, bg='#5e817b', variable=x, value=4, text="Remove", padx=20, command=self.setAR2(0), indicatoron=0,width=5).grid(column=1, row=20, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
+
     def grid3by3(self, frame):
 
         nbh_c = None
@@ -236,10 +249,10 @@ class GUI(Frame):
         deployment_1 = int(self.dep1.get())
         location_2 = int(self.loc2.get())
         deployment_2 = int(self.dep2.get())
-        actions = self.env.encode_raw_action(add_1 = 0,
+        actions = self.env.encode_raw_action(add_1=self.ar1,
                                              location_1=LOCATIONS(location_1),
                                              deployment_1=DEPLOYMENTS(deployment_1),
-                                             add_2 = 0,
+                                             add_2=self.ar2,
                                              location_2=LOCATIONS(location_2),
                                              deployment_2=DEPLOYMENTS(deployment_2))
         observation, reward, done, info = self.env.step(actions)

@@ -23,7 +23,7 @@ class LEVELS(IntEnum):
             exec('return LEVELS.' + level.upper() + '.value')
         else:
             warnings.warn('Tried to convert string ({}) to LEVELS enum and failed; returned NONE'.format(level))
-            return LEVELS.STAY.value
+            return LEVELS.NONE.value
 
     @staticmethod
     def get_name_from_string(level):
