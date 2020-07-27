@@ -1,5 +1,8 @@
 import argparse
 from ZGameMachineTrain import ZGame
+import os
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True' # YOU GET OMP: ERROR #15 without this line. Delete it if you do not need this.
 
 parser = argparse.ArgumentParser(description='CLI Argument Parser for RL Training.')
 parser.add_argument('--modelfilename', help='Output file name for learned model.', default='rl-agent')
