@@ -12,8 +12,8 @@ class GUI(Frame):
 
     def __init__(self, zgame, master):
         super(GUI, self).__init__(master)
-        self.ar1=0
-        self.ar2=0
+        self.ar1 = 0
+        self.ar2 = 0
         self.env = zgame.env
         self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
         self.GAME_ID = zgame.GAME_ID
@@ -23,14 +23,19 @@ class GUI(Frame):
         self.grid()
         self.env.reset()
         self.create_widgets()
-    def setAR1(self, number):
-        self.ar1=number
-        print(self.ar1)
-        print(number)
-    def setAR2(self, number):
-        self.ar2=number
-        print(self.ar2)
-        print(number)
+
+    def set1A(self):
+        self.ar1=0
+
+    def set1R(self):
+        self.ar1 = 1
+
+    def set2A(self):
+        self.ar2 = 0
+
+    def set2R(self):
+        self.ar2 = 1
+
     def create_widgets(self):
         # cmd line UI
         print(self.env.render(mode='human'))
@@ -42,70 +47,88 @@ class GUI(Frame):
         title = Frame(left, bg="red")
         title.grid(row=0, column=0)
 
-        tables = Frame(left, bg="blue", width = 21)
+        tables = Frame(left, bg="blue", width=21)
         tables.grid(row=1, column=0)
 
         # print title "ZGAME"
-        Label(title, text="ZGAME", font='Chalkduster 35', justify=LEFT, width=21).grid(row=0, column=0, padx=(6,7), pady=(6,7))
+        Label(title, text="ZGAME", font='Chalkduster 35', justify=LEFT, width=21).grid(row=0, column=0, padx=(6, 7),
+                                                                                       pady=(6, 7))
 
-        #print 3 by 3 tables of neighborhoods
+        # print 3 by 3 tables of neighborhoods
         self.grid3by3(tables)
 
-        right = Frame(self, bg='#86b8b0',padx=10,pady=20)
+        right = Frame(self, bg='#86b8b0', padx=10, pady=20)
         right.grid(row=0, column=1)
-        #GLOBAL INFO
+        # GLOBAL INFO
         str = ' Turn: {0} of {1}'.format(self.turn, self.max_turns) \
               + '\n Fear: {}'.format(self.fear) \
               + '\n Resources: {}'.format(self.resources)
-        Label(right, text=str, justify=LEFT, bg='#b886af').grid(row=3, column=3, columnspan=2, rowspan=3,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text=str, justify=LEFT, bg='#b886af').grid(row=3, column=3, columnspan=2, rowspan=3, padx=10,
+                                                                pady=10, ipadx=5, ipady=5)
 
         str = 'Turn Score: {0} (Total Score: {1})'.format(self.score, self.total_score) \
               + '\nLiving at Start: {}'.format(self.orig_alive) \
               + '\nDead at Start: {}'.format(self.orig_dead)
-        Label(right, text=str, justify=LEFT, bg='#b886af').grid(row=6, column=2, rowspan=3, columnspan=4,padx=10,pady=10, ipadx=5,ipady=5)
-        Label(right, text="Deployments", bg='#e32770').grid(row=0, column=0,padx=10,pady=10, ipadx=5,ipady=5)
-        Label(right, text="Locations", bg='#e32770').grid(row=0, column=1, columnspan=1,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text=str, justify=LEFT, bg='#b886af').grid(row=6, column=2, rowspan=3, columnspan=4, padx=10,
+                                                                pady=10, ipadx=5, ipady=5)
+        Label(right, text="Deployments", bg='#e32770').grid(row=0, column=0, padx=10, pady=10, ipadx=5, ipady=5)
+        Label(right, text="Locations", bg='#e32770').grid(row=0, column=1, columnspan=1, padx=10, pady=10, ipadx=5,
+                                                          ipady=5)
         loc_str = ""
         for i in range(9):
-            if i  is 8:
+            if i is 8:
                 loc_str += "{0} - {1}".format(LOCATIONS(i).value, LOCATIONS(i).name)
             else:
                 loc_str += "{0} - {1}\n".format(LOCATIONS(i).value, LOCATIONS(i).name)
 
-        Label(right, text=loc_str, justify=LEFT,bg='#dfcec2').grid(row=1, column=1, rowspan=10, columnspan=1,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text=loc_str, justify=LEFT, bg='#dfcec2').grid(row=1, column=1, rowspan=10, columnspan=1, padx=10,
+                                                                    pady=10, ipadx=5, ipady=5)
         dep_str = ""
         for i in range(25):
             if i is 24:
                 dep_str += "{0} - {1}".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
             else:
                 dep_str += "{0} - {1}\n".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
-        Label(right, text=dep_str, justify=LEFT,bg='#dfcec2').grid(row=1, column=0, rowspan=24, padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text=dep_str, justify=LEFT, bg='#dfcec2').grid(row=1, column=0, rowspan=24, padx=10, pady=10,
+                                                                    ipadx=5, ipady=5)
 
-
-        Label(right, text="Location 1", bg='#5e817b').grid(row=14, column=2, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Location 1", bg='#5e817b').grid(row=14, column=2, columnspan=2, rowspan=2, padx=10, pady=10,
+                                                           ipadx=5, ipady=5)
         self.loc1 = Entry(right, bg='#5e817b')
-        self.loc1.grid(row=14, column=4, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.loc1.grid(row=14, column=4, columnspan=2, rowspan=2, padx=10, pady=10)
 
-        Label(right, text="Deployment 1", bg='#5e817b').grid(row=16, column=2, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Deployment 1", bg='#5e817b').grid(row=16, column=2, columnspan=2, rowspan=2, padx=10,
+                                                             pady=10, ipadx=5, ipady=5)
         self.dep1 = Entry(right, bg='#5e817b')
-        self.dep1.grid(row=16, column=4, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.dep1.grid(row=16, column=4, columnspan=2, rowspan=2, padx=10, pady=10)
 
-        Label(right, text="Location 2", bg='#5e817b').grid(row=18, column=2, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Location 2", bg='#5e817b').grid(row=18, column=2, columnspan=2, rowspan=2, padx=10, pady=10,
+                                                           ipadx=5, ipady=5)
         self.loc2 = Entry(right, bg='#5e817b')
-        self.loc2.grid(row=18, column=4, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.loc2.grid(row=18, column=4, columnspan=2, rowspan=2, padx=10, pady=10)
 
-        Label(right, text="Deployment 2", bg='#5e817b').grid(row=20, column=2, columnspan=2, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
+        Label(right, text="Deployment 2", bg='#5e817b').grid(row=20, column=2, columnspan=2, rowspan=2, padx=10,
+                                                             pady=10, ipadx=5, ipady=5)
         self.dep2 = Entry(right, bg='#5e817b')
-        self.dep2.grid(row=20, column=4, columnspan=2, rowspan=2,padx=10,pady=10)
+        self.dep2.grid(row=20, column=4, columnspan=2, rowspan=2, padx=10, pady=10)
 
-        Button(right, text="Next step", command=self.update,height = 2, width = 40, bg='#b8ac86').grid(row=24, column=1, columnspan=6,rowspan=2,padx=10,pady=10)
-        Button(right, text="Quit", command=self.quit,height = 2, width = 25, bg='#b8ac86').grid(row=0, column=3, columnspan=2,rowspan=1,padx=10,pady=10)
+        Button(right, text="Next step", command=self.update, height=2, width=40, bg='#b8ac86').grid(row=24, column=1,
+                                                                                                    columnspan=6,
+                                                                                                    rowspan=2, padx=10,
+                                                                                                    pady=10)
+        Button(right, text="Quit", command=self.quit, height=2, width=25, bg='#b8ac86').grid(row=0, column=3,
+                                                                                             columnspan=2, rowspan=1,
+                                                                                             padx=10, pady=10)
         v = IntVar()
-        x=IntVar()
-        Radiobutton(right,bg='#5e817b',variable=v, value=1, text="Add", padx=20, command=self.setAR1(1), indicatoron=0, width=5).grid(column=1, row=14, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
-        Radiobutton(right, bg='#5e817b',variable=v, value=2, text="Remove", padx=20, command=self.setAR1(0), indicatoron=0,width=5).grid(column=1, row=16, rowspan=2,padx=10,pady=10, ipadx=5,ipady=5)
-        Radiobutton(right, bg='#5e817b', variable=x, value=3, text="Add", padx=20, command=self.setAR2(1), indicatoron=0,width=5).grid(column=1, row=18, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
-        Radiobutton(right, bg='#5e817b', variable=x, value=4, text="Remove", padx=20, command=self.setAR2(0), indicatoron=0,width=5).grid(column=1, row=20, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
+        x = IntVar()
+        Radiobutton(right, bg='#5e817b', variable=v, value=1, text="Add", padx=20, command=self.set1A,
+                    indicatoron=0, width=5).grid(column=1, row=14, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
+        Radiobutton(right, bg='#5e817b', variable=v, value=2, text="Remove", padx=20, command=self.set1R,
+                    indicatoron=0, width=5).grid(column=1, row=16, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
+        Radiobutton(right, bg='#5e817b', variable=x, value=3, text="Add", padx=20, command=self.set2A,
+                    indicatoron=0, width=5).grid(column=1, row=18, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
+        Radiobutton(right, bg='#5e817b', variable=x, value=4, text="Remove", padx=20, command=self.set2R,
+                    indicatoron=0, width=5).grid(column=1, row=20, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
 
     def grid3by3(self, frame):
 
@@ -138,8 +161,8 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_nw, nbh_nw.num_dead).name,
                       nbh_nw.orig_alive,
                       nbh_nw.orig_dead,
-                      nbh_nw.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-              ).grid(row=1, column=0, sticky=W, padx = (10, 5), pady = (10,5))
+                      nbh_nw.get_current_deps()), justify=LEFT, width=18, height=9, bg="#00cccc"
+              ).grid(row=1, column=0, sticky=W, padx=(10, 5), pady=(10, 5))
 
         # printing information for N
         Label(frame,
@@ -150,8 +173,8 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_n, nbh_n.num_dead).name,
                       nbh_n.orig_alive,
                       nbh_n.orig_dead,
-                      nbh_n.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00ff80"
-              ).grid(row=1, column=1, sticky=W, padx = 5, pady = (10,5))
+                      nbh_n.get_current_deps()), justify=LEFT, width=18, height=9, bg="#00ff80"
+              ).grid(row=1, column=1, sticky=W, padx=5, pady=(10, 5))
 
         # printing information for NE
         Label(frame,
@@ -162,8 +185,8 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_ne, nbh_ne.num_dead).name,
                       nbh_ne.orig_alive,
                       nbh_ne.orig_dead,
-                      nbh_ne.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-              ).grid(row=1, column=2, sticky=W, padx = (5,10), pady = (10,5))
+                      nbh_ne.get_current_deps()), justify=LEFT, width=18, height=9, bg="#00cccc"
+              ).grid(row=1, column=2, sticky=W, padx=(5, 10), pady=(10, 5))
 
         # printing information for W
         Label(frame,
@@ -174,8 +197,8 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_w, nbh_w.num_dead).name,
                       nbh_w.orig_alive,
                       nbh_w.orig_dead,
-                      nbh_w.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00ff80"
-              ).grid(row=2, column=0, sticky=W, padx = (10, 5), pady = 5)
+                      nbh_w.get_current_deps()), justify=LEFT, width=18, height=9, bg="#00ff80"
+              ).grid(row=2, column=0, sticky=W, padx=(10, 5), pady=5)
 
         # printing information for C
         Label(frame,
@@ -186,8 +209,8 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_c, nbh_c.num_dead).name,
                       nbh_c.orig_alive,
                       nbh_c.orig_dead,
-                      nbh_c.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-              ).grid(row=2, column=1, sticky=W, padx = 5, pady = 5)
+                      nbh_c.get_current_deps()), justify=LEFT, width=18, height=9, bg="#00cccc"
+              ).grid(row=2, column=1, sticky=W, padx=5, pady=5)
 
         # printing information for E
         Label(frame,
@@ -198,8 +221,8 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_e, nbh_e.num_dead).name,
                       nbh_e.orig_alive,
                       nbh_e.orig_dead,
-                      nbh_e.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00ff80"
-              ).grid(row=2, column=2, sticky=W, padx = (5,10), pady = 5)
+                      nbh_e.get_current_deps()), justify=LEFT, width=18, height=9, bg="#00ff80"
+              ).grid(row=2, column=2, sticky=W, padx=(5, 10), pady=5)
 
         # printing information for SW
         Label(frame,
@@ -210,8 +233,8 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_sw, nbh_sw.num_dead).name,
                       nbh_sw.orig_alive,
                       nbh_sw.orig_dead,
-                      nbh_sw.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-              ).grid(row=3, column=0, sticky=W, padx = (10, 5), pady = (5,10))
+                      nbh_sw.get_current_deps()), justify=LEFT, width=18, height=9, bg="#00cccc"
+              ).grid(row=3, column=0, sticky=W, padx=(10, 5), pady=(5, 10))
 
         # printing information for S
         Label(frame,
@@ -222,8 +245,8 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_s, nbh_s.num_dead).name,
                       nbh_s.orig_alive,
                       nbh_s.orig_dead,
-                      nbh_s.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00ff80"
-              ).grid(row=3, column=1, sticky=W, padx = 5, pady = (5,10))
+                      nbh_s.get_current_deps()), justify=LEFT, width=18, height=9, bg="#00ff80"
+              ).grid(row=3, column=1, sticky=W, padx=5, pady=(5, 10))
 
         # printing information for SE
         Label(frame,
@@ -234,9 +257,8 @@ class GUI(Frame):
                       self.env.city.mask_visible_data(nbh_se, nbh_se.num_dead).name,
                       nbh_se.orig_alive,
                       nbh_se.orig_dead,
-                      nbh_se.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-              ).grid(row=3, column=2, sticky=W, padx = (5,10), pady = (5,10))
-
+                      nbh_se.get_current_deps()), justify=LEFT, width=18, height=9, bg="#00cccc"
+              ).grid(row=3, column=2, sticky=W, padx=(5, 10), pady=(5, 10))
 
     # function for quitting the gamme
     def quit(self):
