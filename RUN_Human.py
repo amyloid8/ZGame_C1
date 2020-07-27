@@ -22,4 +22,4 @@ if __name__ == '__main__':
     data_log_file = args.outfile
     os.system('mode con: cols=125 lines=62')
     zgame_env = ZGame(data_log_file)
-    zgame_env.run_gui()
+    zgame_env.run()
