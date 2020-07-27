@@ -1,6 +1,6 @@
 {
-  "mode": "train",
-  "demo": 0,
+  "mode": "play",
+  "demo": 1,
   "num_steps": 1000,
   "num_envs": 1,
   "max_turns": 14,

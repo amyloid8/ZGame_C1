@@ -45,7 +45,7 @@ class ZGame(gym.Env):
         self._num_locations = len(LOCATIONS)
         self._num_deployments = len(DEPLOYMENTS)
         self._num_actions = self._num_locations * self._num_deployments
-        self.action_space = spaces.MultiDiscrete([self._num_actions, self._num_actions])
+        self.action_space = spaces.MultiDiscrete([2*self._num_actions, 2*self._num_actions])
         self.observation_space = spaces.Box(low=0, high=200, shape=(10, 6 + (self.MAX_TURNS * 2)), dtype='uint8')
 
         self.reset()
@@ -210,7 +210,7 @@ class ZGame(gym.Env):
         self._num_locations = len(LOCATIONS)
         self._num_deployments = len(DEPLOYMENTS)
         self._num_actions = self._num_locations * self._num_deployments
-        self.action_space = spaces.MultiDiscrete([self._num_actions, self._num_actions])
+        self.action_space = spaces.MultiDiscrete([2*self._num_actions, 2*self._num_actions])
         self.observation_space = spaces.Box(low=0, high=200, shape=(10, 6 + (self.MAX_TURNS * 2)), dtype='uint8')
         obs = self.get_obs()
         return obs
@@ -269,12 +269,13 @@ class ZGame(gym.Env):
             raise ValueError('Failed to find acceptable play type.')
 
     @staticmethod
-    def encode_raw_action(location_1, deployment_1, location_2=None, deployment_2=None):
+    def encode_raw_action(add_1, location_1, deployment_1, add_2 = None, location_2=None, deployment_2=None):
         # Takes in locations and deployments and converts it to a pair of ints that matches the action space def
         # Think of it as a 2d array where rows are locations and columns are deployments
         # Then, the 2d array is unwrapped into a 1d array where the 2nd row starts right after the first
-        action_1 = location_1.value * len(DEPLOYMENTS) + deployment_1.value
-        action_2 = location_2.value * len(DEPLOYMENTS) + deployment_2.value
+        # 0 to LOCATIONS * DEPLOYMENTS-1 is adding a deployment, and LOCATIONS*DEPLOYMENTS to 2*LOCATIONS*DEPLOYMENTS-1 is removing
+        action_1 = add_1 * len(LOCATIONS) * len(DEPLOYMENTS) + location_1.value * len(DEPLOYMENTS) + deployment_1.value
+        action_2 = add_2 * len(LOCATIONS) * len(DEPLOYMENTS) + location_2.value * len(DEPLOYMENTS) + deployment_2.value
         return [action_1, action_2]
 
     @staticmethod
@@ -283,9 +284,14 @@ class ZGame(gym.Env):
         # Modular arithmetic to the rescue
         readable_actions = []
         for action in actions:
+            if action >= len(LOCATIONS) * len(DEPLOYMENTS):
+                add_int = 1
+                action -= len(LOCATIONS) * len(DEPLOYMENTS)
+            else:
+                add_int = 0
             location_int = action // len(DEPLOYMENTS)  # gets the quotient
             deployment_int = action % len(DEPLOYMENTS)  # gets the remainder
-            readable_actions.append([LOCATIONS(location_int), DEPLOYMENTS(deployment_int)])
+            readable_actions.append([add_int, LOCATIONS(location_int), DEPLOYMENTS(deployment_int)])
         return readable_actions
 
     @staticmethod

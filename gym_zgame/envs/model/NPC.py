@@ -15,6 +15,7 @@ class NPC:
         self.moving = None
         self.active = None
         self.sickly = None
+        self.income = self.set_init_income()
         self.update_states()
         self.bag = []
         self.empty_bag()
@@ -94,8 +95,26 @@ class NPC:
                        'state_flu': self.state_flu,
                        'moving': self.moving,
                        'active': self.active,
-                       'sickly': self.sickly}
+                       'sickly': self.sickly,
+                       'income': self.income}
         return player_data
+
+    def set_init_income(self):
+
+        income_type_decider = random.uniform(0, 1)
+
+        wealthy_chance = .1
+        poor_chance = .4
+        # normal_chance = .5
+
+        if income_type_decider <= wealthy_chance:
+            income_value = random.uniform(200000, 400000)
+        elif income_type_decider >= 1 - poor_chance:
+            income_value = random.uniform(0, 100000)
+        else:
+            income_value = random.uniform(100000, 200000)
+
+        return income_value
 
 
 if __name__ == '__main__':

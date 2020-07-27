@@ -77,8 +77,8 @@ class ZGame:
         decoded_actions = self.env.decode_raw_action(actions)
         action_1 = decoded_actions[0]
         action_2 = decoded_actions[1]
-        print('Action 1: Location - {0}, Deployment - {1}'.format(action_1[0].name, action_1[1].name))
-        print('Action 2: Location - {0}, Deployment - {1}'.format(action_2[0].name, action_2[1].name))
+        print('Action 1: Location - {0}, Deployment - {1}, Add/Remove - {2}'.format(action_1[1].name, action_1[2].name, 'Add' if action_1[0] == 0 else 'Remove'))
+        print('Action 2: Location - {0}, Deployment - {1}, Add/Remove - {2}'.format(action_2[1].name, action_2[2].name, 'Add' if action_2[0] == 0 else 'Remove'))
 
     def run(self):
         print('Starting new game with machine play!')
@@ -92,8 +92,8 @@ class ZGame:
 
             # for testing data analysis purposes only
             readable_actions = self.env.decode_raw_action(actions)
-            loc_1, dep_1 = readable_actions[0][0].value, readable_actions[0][1].value
-            loc_2, dep_2 = readable_actions[1][0].value, readable_actions[1][1].value
+            act, loc_1, dep_1 = readable_actions[0][0], readable_actions[0][1].value, readable_actions[0][2].value
+            act, loc_2, dep_2 = readable_actions[1][0], readable_actions[1][1].value, readable_actions[1][2].value
             deps_data = [dep_1, dep_2]
             self.all_deployments.append([dep_1, dep_2])
             self.total_reward += reward
