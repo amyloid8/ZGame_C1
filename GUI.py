@@ -83,13 +83,7 @@ class GUI(Frame):
 
         Label(right, text=loc_str, justify=LEFT, bg='#dfcec2').grid(row=1, column=1, rowspan=10, columnspan=1, padx=10,
                                                                     pady=10, ipadx=5, ipady=5)
-        dep_str = ""
-        for i in range(25):
-            if i is 24:
-                dep_str += "{0} - {1}".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
-            else:
-                dep_str += "{0} - {1}\n".format(DEPLOYMENTS(i).value, DEPLOYMENTS(i).name)
-        Label(right, text=dep_str, justify=LEFT, bg='#dfcec2').grid(row=1, column=0, rowspan=24, padx=10, pady=10,
+        Label(right, text=self.getDeps(), justify=LEFT, bg='#dfcec2').grid(row=1, column=0, rowspan=24, padx=10, pady=10,
                                                                     ipadx=5, ipady=5)
 
         Label(right, text="Location 1", bg='#5e817b').grid(row=14, column=2, columnspan=2, rowspan=2, padx=10, pady=10,
@@ -302,3 +296,38 @@ class GUI(Frame):
 
         # self.env.render(mode='human')
         self.create_widgets()
+    def getDeps(self):
+        deps=["None","Quarantine: Open", "Quarantine: Fenced", "Bite Center: Disinfect"]
+        deps.append("Bite Center: Amputate")
+        deps.append("Zombie Cure Center: FDA Approved")
+        deps.append("Zombie Cure Center: Experimental")
+        deps.append("Optional Flu Vaccine")
+        deps.append("Mandatory Flu Vaccine")
+        deps.append("Kiln: With Oversight")
+        deps.append("Kiln: No Questions Asked")
+        deps.append("Broadcast: Don't Panic")
+        deps.append("Broadcast: Call to Arms")
+        deps.append("Sniper Tower: Professional")
+        deps.append("Sniper Tower: Free Range")
+        deps.append("Pheromones: Brains")
+        deps.append("Pheromones: Meat")
+        deps.append("BSL-4 Lab: Regulated")
+        deps.append("BSL-4 Lab: Unregulated")
+        deps.append("Rally Point: PSA")
+        deps.append("Rally Point: Evacuation")
+        deps.append("Firebomb: Useless")
+        deps.append("Firebomb: Barrage")
+        deps.append("Social Distancing: Signs")
+        deps.append("Social Distancing: Celebrity Recommendation")
+        deps.append("Flu Testing Center: Optional")
+        deps.append("Flu Testing Center: Mandatory")
+        deps.append("Supply Depot")
+        deps.append("Factory")
+        deps.append("Volunteer Recruitment")
+        dep_str=""
+        for i in range(len(deps)):
+            if i is 29:
+                dep_str += "{0} - {1}".format(i,deps[i])
+            else:
+                dep_str += "{0} - {1}\n".format(i,deps[i])
+        return dep_str
