@@ -59,6 +59,7 @@ class City:
 
 
         self.all_deployments = []
+        self.turn_deployments = []
 
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
@@ -257,6 +258,7 @@ class City:
             nbh.update_summary_stats()
 
     def do_turn(self, actions):
+        self.turn_deployments = []
         for action in actions:
             add = action[0]  # Unpack for readability
             loc = action[1]
@@ -297,6 +299,7 @@ class City:
         if dep != DEPLOYMENTS.NONE:
             self.neighborhoods[nbh_index].add_deployment(dep)
         self.all_deployments.append(dep)
+        self.turn_deployments.append(dep)
 
     def _remove_building_from_location(self, nbh_index, dep):
         self.neighborhoods[nbh_index].remove_deployment(dep)

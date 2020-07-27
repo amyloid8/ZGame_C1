@@ -37,7 +37,7 @@ class IndividualAnalyzer:
 
     # gets frequency of deployment usage
     def get_actions_count(self):
-        actions = self.all_data['actions']
+        actions = self.all_data['deployments']
         print(actions)
         actions_count = {}
         i = 0
@@ -65,6 +65,8 @@ class IndividualAnalyzer:
         plt.xticks(rotation=90)
         plt.tight_layout()
         plt.show()
+
+        return actions_count
 
 
 
@@ -118,9 +120,9 @@ class IndividualAnalyzer:
 
 
 if __name__ == '__main__':
-    a = IndividualAnalyzer('data_log.json')
+    a = IndividualAnalyzer('train_info.json')
     a.get_rewards()
-    a.get_category_data('raw_state')
+    a.get_category_data('deployments')
     a.get_categories()
     a.get_actions_count()
 

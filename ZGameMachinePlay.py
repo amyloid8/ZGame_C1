@@ -15,7 +15,8 @@ class ZGame:
     OpenAI blog post: https://openai.com/blog/baselines-acktr-a2c/
     https://stable-baselines.readthedocs.io/en/master/modules/a2c.html
     """
-    def __init__(self, model_filename, data_log_file='data_log.json', analysis_log_file='game_info.json', play_config = 'play_config.json'):
+    def __init__(self, model_filename, data_log_file='data_log.json', analysis_log_file='machine_log.json',
+                 play_config = 'play_config.json'):
         self.ENV_NAME = 'ZGame-v0'
         self.DATA_LOG_FILE_NAME = data_log_file
         self.CONFIG_FILENAME = play_config
@@ -50,10 +51,10 @@ class ZGame:
         all_stats.update(general_stats)
         all_stats.update({'total reward': self.total_reward, 'game ID': str(self.GAME_ID)})
 
-        data_to_log = all_stats
-
-        with open(self.ANALYSIS_FILENAME, 'a') as f_:
-            f_.write(json.dumps(data_to_log) + '\n')
+        # data_to_log = all_stats
+        #
+        # with open(self.ANALYSIS_FILENAME, 'a') as f_:
+        #     f_.write(json.dumps(data_to_log) + '\n')
 
     def _setup(self):
         # Game parameters

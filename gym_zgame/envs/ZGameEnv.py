@@ -16,13 +16,17 @@ from multiprocessing import Queue
 
 class ZGame(gym.Env):
 
-    def __init__(self, demo=True, rl_log_name = 'train_info.json', rl_config_name = 'play_config.json'):
+    def __init__(self, demo=True, human_log_name = 'human_log.json', machine_log_name = 'machine_log.json',
+                 rl_log_name='train_info.json',
+                 config_name='play_config.json'):
         # Tunable parameters
 
         self.play_type = PLAY_TYPE.MACHINE  # Defaults only, set in main classes
         self.render_mode = 'machine'
-        self.LOG_FILENAME = rl_log_name
-        self.CONFIG_FILENAME = rl_config_name
+        self.RL_LOG_FILENAME = rl_log_name
+        self.HUMAN_LOG_NAME = human_log_name
+        self.MACHINE_LOG_NAME = machine_log_name
+        self.CONFIG_FILENAME = config_name
 
         self.config = {}
         with open(self.CONFIG_FILENAME) as file:
@@ -31,6 +35,7 @@ class ZGame(gym.Env):
 
         self.mode = self.config["mode"]
         self.demo = bool(self.config["demo"])
+        self.who_play = self.config["who"]  # machine or human
 
         # CONSTANTS
         self.MAX_TURNS = self.config["max_turns"]
@@ -54,9 +59,11 @@ class ZGame(gym.Env):
 
         self.collection_counter = 0
 
+        #keeps track of step number for graphing purposes
         self.step_counter = 0
-
         self.x_counter = []
+
+        self.store = []
 
         # self.y_values = []
         self.alive = []
@@ -83,12 +90,16 @@ class ZGame(gym.Env):
         # contains: {
         # total score, reward, list of actions,
         # alive, dead, ashen, human, zombie, healthy, flu}
+        info = {}
         info = {
-            'score': self.city.total_score,
-            'deployments': self.city.all_deployments,
+            'score': self.city.score,
             'reward': self.reward,
             'total_score': self.total_score
         }
+        if self.mode == "play":
+            info.update({'deployments': self.city.turn_deployments})
+        else:
+            info.update({'deployments': self.city.all_deployments}) # want to know what actions it took at any given state
         return info
 
     def get_city_info(self):
@@ -168,8 +179,7 @@ class ZGame(gym.Env):
                     self.human, self.zombie,
                     self.healthy, self.flu, self.immune])
 
-#TODO
-    # plots deployment uses
+    # plots score changes
     def plot_score_graph(self, q_score):
         print("entered plot_deployment_graph()")
 
@@ -187,7 +197,7 @@ class ZGame(gym.Env):
         plt.tight_layout()
         plt.show()
         print("exiting plot_graph() process")
-#TODO
+
     def process_score_graph_data(self):
         # for i in range(self.collect_interval):
         # if len(self.alive) > 200:
@@ -240,11 +250,19 @@ class ZGame(gym.Env):
             self.collect_interval = self.config["play_collection_interval"]
 
         if self.collection_counter == self.collect_interval:
-            self.write_to_log(self.LOG_FILENAME)
+            if self.mode == "train":
+                self.write_to_log(self.RL_LOG_FILENAME)
+            else:
+                if self.who_play == "human":
+                    self.write_to_log(self.HUMAN_LOG_NAME)
+                else:
+                    self.write_to_log(self.MACHINE_LOG_NAME)
             self.collection_counter = 0
             if self.demo == True:
                 self.process_npc_graph_data()
                 self.process_score_graph_data()
+
+
 
         return obs, self.total_score, self.done, info
 
