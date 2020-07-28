@@ -507,9 +507,9 @@ class City:
 
             # Raises probability factor to power of n deployments
             if DEPLOYMENTS.KILN_OVERSIGHT in nbh.current_deployments:
-                burial_prob = min(1.0, burial_prob * 1.5 ** nbh.current_deployments.count(DEPLOYMENT.KILN_OVERSIGHT))
+                burial_prob = min(1.0, burial_prob * 1.5 ** nbh.current_deployments.count(DEPLOYMENTS.KILN_OVERSIGHT))
             if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.current_deployments:
-                burial_prob = min(1.0, burial_prob * 5.0 ** nbh.current_deployments.count(DEPLOYMENT.KILN_NO_QUESTIONS))
+                burial_prob = min(1.0, burial_prob * 5.0 ** nbh.current_deployments.count(DEPLOYMENTS.KILN_NO_QUESTIONS))
 
             # Universal Law: Burial
             for npc in nbh.NPCs:
@@ -535,13 +535,13 @@ class City:
             # Update based on deployments
 
             if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.current_deployments:
-                fumes_prob = min(1.0, fumes_prob * 10.0 ** nbh.current_deployments.count(DEPLOYMENT.BSL4LAB_SAFETY_OFF))
+                fumes_prob = min(1.0, fumes_prob * 10.0 ** nbh.current_deployments.count(DEPLOYMENTS.BSL4LAB_SAFETY_OFF))
             if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
-                cough_prob = min(1.0, fumes_prob * 0.75 ** nbh.current_deployments.count(DEPLOYMENT.SOCIAL_DISTANCING_SIGNS))
-                fumes_prob = min(1.0, fumes_prob * 0.75 ** nbh.current_deployments.count(DEPLOYMENT.SOCIAL_DISTANCING_SIGNS))
+                cough_prob = min(1.0, fumes_prob * 0.75 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS))
+                fumes_prob = min(1.0, fumes_prob * 0.75 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS))
             if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.current_deployments:
-                cough_prob = min(1.0, fumes_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENT.SOCIAL_DISTANCING_CELEBRITY))
-                fumes_prob = min(1.0, fumes_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENT.SOCIAL_DISTANCING_CELEBRITY))
+                cough_prob = min(1.0, fumes_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY))
+                fumes_prob = min(1.0, fumes_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY))
 
             # Flu Laws
             for npc in nbh.NPCs:
@@ -951,11 +951,11 @@ class City:
         ashen_weight = weights["ashen_weight"]
         resource_weight = weights["resource_weight"]
         score = (self.num_active * active_weight) + \
-                (self.num_sickly * sickly_weight) - \
-                (self.fear * fear_weight) - \
+                (self.num_sickly * sickly_weight) + \
+                (self.fear * fear_weight) + \
                 (self.num_zombie * zombie_weight) + \
-                (self.resources * resource_weight) - \
-                (self.num_dead * dead_weight) - \
+                (self.resources * resource_weight) + \
+                (self.num_dead * dead_weight) + \
                 (self.num_ashen * ashen_weight)
         scaled_score = np.floor((score + 800) / 100)  # scaled to fit env state space range
         return scaled_score
