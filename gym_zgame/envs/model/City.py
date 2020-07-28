@@ -138,6 +138,9 @@ class City:
     def get_num_npcs(self):
         return self.num_npcs
 
+    def get_num_alive(self):
+        return self.num_alive
+
 
     def _init_neighborhood_threats(self):
         # Add 10 dead in a random location
