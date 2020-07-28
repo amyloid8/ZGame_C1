@@ -302,7 +302,7 @@ class GUI(Frame):
         # printing information for SE
         self.oneblock(frame, nbh_se, 3, 2, (5,10), (5,10), "#00cccc")
 
-        self.graph(frame)
+        # self.graph(frame)
 
     # prints info for one block and button that leads to drawing pie chart
     def oneblock(self, frame, nbh, row_index, col_index, padx_value, pady_value, color):
