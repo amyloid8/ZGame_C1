@@ -3,11 +3,14 @@ import random
 from gym_zgame.envs.enums.NPC_STATES import NPC_STATES_DEAD, NPC_STATES_ZOMBIE, NPC_STATES_FLU
 from gym_zgame.envs.enums.NPC_ACTIONS import NPC_ACTIONS
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS
+import json
 
 
 class NPC:
 
-    def __init__(self):
+    def __init__(self, config_file = 'city_config.json'):
+
+        self.FILENAME = config_file
         self.id = uuid.uuid4()
         self.state_dead = NPC_STATES_DEAD.ALIVE
         self.state_zombie = NPC_STATES_ZOMBIE.HUMAN
@@ -15,10 +18,19 @@ class NPC:
         self.moving = None
         self.active = None
         self.sickly = None
+        self.INCOME_PROB = {}
+        self._init_config(self.FILENAME)
         self.income = self.set_init_income()
         self.update_states()
         self.bag = []
         self.empty_bag()
+
+
+    def _init_config(self, filename):
+        with open(filename) as file:
+            data = json.load(file)
+        self.INCOME_PROB.update(data["income_prob"])
+
 
     def get_zombie_state(self):
         return self.state_zombie
@@ -103,13 +115,10 @@ class NPC:
 
         income_type_decider = random.uniform(0, 1)
 
-        wealthy_chance = .1
-        poor_chance = .4
-        # normal_chance = .5
 
-        if income_type_decider <= wealthy_chance:
+        if income_type_decider <= self.INCOME_PROB["high"]:
             income_value = random.uniform(200000, 400000)
-        elif income_type_decider >= 1 - poor_chance:
+        elif income_type_decider >= self.INCOME_PROB["low"]:
             income_value = random.uniform(0, 100000)
         else:
             income_value = random.uniform(100000, 200000)
