@@ -33,6 +33,11 @@ class Neighborhood:
         self.income = 0
         self.sanitation = 0
         self.adj_locations = adj_locations
+        self.SPAWN_CHANCES = {}
+        self.INCOME_THRSHLD = {}
+        self.TRANS_PROBS = {}
+        self.SANITATION_CONST = 1
+        self._init_config(self.FILENAME)
         self._npc_init(num_init_npcs)
         self.archive_deployments = []
         # Transition probabilities
@@ -43,11 +48,6 @@ class Neighborhood:
         self.orig_alive, self.orig_dead = self._get_original_state_metrics()
 
         self.current_deployments = []
-        self.SPAWN_CHANCES = {}
-        self.INCOME_THRSHLD = {}
-        self.TRANS_PROBS = {}
-        self.SANITATION_CONST = 1
-        self._init_config(self.FILENAME)
 
     def _init_config(self, filename):
         with open(filename) as file:

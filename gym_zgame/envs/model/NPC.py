@@ -18,12 +18,13 @@ class NPC:
         self.moving = None
         self.active = None
         self.sickly = None
+        self.INCOME_PROB = {}
+        self._init_config(self.FILENAME)
         self.income = self.set_init_income()
         self.update_states()
         self.bag = []
         self.empty_bag()
-        self.INCOME_PROB = {}
-        self._init_config(self.FILENAME)
+
 
     def _init_config(self, filename):
         with open(filename) as file:
