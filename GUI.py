@@ -30,9 +30,10 @@ class GUI(Frame):
         self.list_zombie = []
         self.xlist = []
         self.graphed = False
+        self.ar1 = -1
+        self.ar2 = -1
         self.create_widgets()
-        self.ar1=0
-        self.ar2=0
+
 
     def set1A(self):
         self.ar1 = 0
@@ -129,15 +130,16 @@ class GUI(Frame):
         self.dep2 = Entry(right, bg='#5e817b')
         self.dep2.grid(row=20, column=4, columnspan=2, rowspan=2, padx=10, pady=10)
 
-        Button(right, text="Next step", command=self.update, height=2, width=45, bg='#b8ac86').grid(row=24, column=1,
-                                                                                                    columnspan=8,
-                                                                                                    rowspan=2, padx=10,
-                                                                                                    pady=10)
+        self.next = Button(right, text="Next step", command=self.check_update, height=2, width=45, bg='#b8ac86')
+        self.next.grid(row=24, column=1, columnspan=8, rowspan=2, padx=10, pady=10)
+
         Button(right, text="Quit", command=self.quit, height=2, width=25, bg='#b8ac86').grid(row=0, column=3,
                                                                                              columnspan=2, rowspan=1,
                                                                                              padx=10, pady=10)
         v = IntVar()
         x = IntVar()
+        self.ar1 = -1
+        self.ar2 = -1
         Radiobutton(right, bg='#5e817b', variable=v, value=1, text="Add", padx=20, command=self.set1A,
                     indicatoron=0, width=5).grid(column=1, row=14, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
         Radiobutton(right, bg='#5e817b', variable=v, value=2, text="Remove", padx=20, command=self.set1R,
@@ -298,6 +300,40 @@ class GUI(Frame):
     # function for quitting the gamme
     def quit(self):
         self.winfo_children()[0].quit()
+
+    # check if all inputs are set before updating the GUI and Zgame Env
+    def check_update(self):
+        print(self.ar1)
+        print(self.ar2)
+
+        try:
+            location_1 = int(self.loc1.get())
+            deployment_1 = int(self.dep1.get())
+            location_2 = int(self.loc2.get())
+            deployment_2 = int(self.dep2.get())
+        except:
+            self.next['text'] = "Invalid Input"
+            self.next['fg'] = "red"
+        else:
+            if (int(self.loc1.get()) > 8 or int(self.loc1.get()) < 0):
+                self.next['text'] = "Invalid Location 1 Input"
+                self.next['fg'] = "red"
+            elif (int(self.dep1.get()) > 29 or int(self.dep1.get()) < 0):
+                self.next['text'] = "Invalid Deployment 1 Input"
+                self.next['fg'] = "red"
+            elif (int(self.loc2.get()) > 8 or int(self.loc2.get()) < 0):
+                self.next['text'] = "Invalid Location 2 Input"
+                self.next['fg'] = "red"
+            elif (int(self.dep2.get()) > 29 or int(self.dep2.get()) < 0):
+                self.next['text'] = "Invalid Deployment 2 Input"
+                self.next['fg'] = "red"
+            elif (self.ar1 == -1 or self.ar2 == -1):
+                self.next['text'] = "Select Add or remove"
+                self.next['fg'] = "red"
+            else:
+                self.update()
+
+
 
     # update the GUI to next step
     def update(self):
