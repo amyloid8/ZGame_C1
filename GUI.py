@@ -10,7 +10,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
+from PIL import ImageTk, Image
 
 class GUI(Frame):
 
@@ -30,6 +30,8 @@ class GUI(Frame):
         self.list_zombie = []
         self.xlist = []
         self.graphed = False
+        self.legend = False
+        self.appended = False
         self.ar1 = -1
         self.ar2 = -1
         self.create_widgets()
@@ -49,9 +51,11 @@ class GUI(Frame):
 
     def create_widgets(self):
         self.graphed = False
+        self.legend = False
+        self.appended = False
 
         # cmd line UI
-        print(self.env.render(mode='human'))
+        # print(self.env.render(mode='human'))
 
         # left frame (titles and tables)
         left = Frame(self)
@@ -67,7 +71,7 @@ class GUI(Frame):
         graphs.grid(row=2, column=0)
 
         # print title "ZGAME"
-        Label(title, text="ZGAME", font='Chalkduster 35', justify=LEFT, width=21).grid(row=0, column=0, padx=(6, 7),
+        Label(title, text="ZGAME", font='Chalkduster 35', justify=LEFT, width=22).grid(row=0, column=0, padx=(6, 7),
                                                                                        pady=(6, 7))
 
         # print 3 by 3 tables of neighborhoods
@@ -77,10 +81,10 @@ class GUI(Frame):
         Button(graphs, text = "Show graph", command = lambda : self.check_graph(left, tables, graphs), width=27, height = 2, highlightbackground="green")\
             .grid(row = 0, column = 0, columnspan = 2, padx = (5,2), pady = 4)
 
-        Button(graphs, text = "Information about graphs", command = lambda : self.check_graph(left, tables, graphs), width=27, height = 2, highlightbackground="green")\
+        Button(graphs, text = "Show legend", command = lambda : self.check_legend(left, tables, graphs), width=27, height = 2, highlightbackground="green")\
             .grid(row = 0, column = 2, columnspan = 2, padx = (2,4), pady = 4)
 
-        right = Frame(self, bg='#86b8b0',padx=10,pady=44)
+        right = Frame(self, bg='#86b8b0',padx=10,pady=37)
         right.grid(row=0, column=1)
         # GLOBAL INFO
         str = ' Turn: {0} of {1}'.format(self.turn, self.max_turns) \
@@ -179,12 +183,13 @@ class GUI(Frame):
             dead += nbh.num_dead
             sickly += nbh.num_sickly
             zombie += nbh.num_zombie
-
-        self.xlist.append(self.turn)
-        self.list_active.append(active)
-        self.list_dead.append(dead)
-        self.list_sickly.append(sickly)
-        self.list_zombie.append(zombie)
+        if (not self.appended):
+            self.xlist.append(self.turn)
+            self.list_active.append(active)
+            self.list_dead.append(dead)
+            self.list_sickly.append(sickly)
+            self.list_zombie.append(zombie)
+        print(self.xlist)
 
         # printing information for NW
         self.oneblock(frame, nbh_nw, 1, 0, (10, 5), (10, 5), '#00cccc')
@@ -213,19 +218,21 @@ class GUI(Frame):
         # printing information for SE
         self.oneblock(frame, nbh_se, 3, 2, (5, 10), (5, 10), "#00cccc")
 
-        # self.graph(frame)
+        self.appended = True
 
     # prints info for one block and button that leads to drawing pie chart
     def oneblock(self, frame, nbh, row_index, col_index, padx_value, pady_value, color):
         Label(frame,
-              text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
+              text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} "
+                   "\nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6} \nSanitation: {7}" \
               .format(self.env.city.mask_visible_data(nbh, nbh.num_active).name,
                       self.env.city.mask_visible_data(nbh, nbh.num_sickly).name,
                       self.env.city.mask_visible_data(nbh, nbh.num_zombie).name,
                       self.env.city.mask_visible_data(nbh, nbh.num_dead).name,
                       nbh.orig_alive,
                       nbh.orig_dead,
-                      nbh.get_current_deps()), justify=LEFT, width=19, height=10, bg=color
+                      nbh.get_current_deps(),
+                      int(nbh.sanitation)), justify=LEFT, width=19, height=10, bg=color
               ).grid(row=row_index, column=col_index, sticky=N + E + W + S, padx=padx_value, pady=pady_value)
 
         Button(frame, command=lambda: self.pieButtons(frame, nbh, row_index, col_index, padx_value, pady_value, color),
@@ -251,38 +258,22 @@ class GUI(Frame):
 
     def check_graph(self, left, tables, graphs):
         if (self.graphed):
-            tables = Frame(left, bg="blue", width=21)
-            tables.grid(row=1, column=0)
+            Label(tables, bg="blue", width=21, height=21).grid(row=1, column=0, rowspan=3, columnspan=3, sticky=N + E + W + S)
             self.grid3by3(tables)
             Button(graphs, text="Show graph", command=lambda: self.check_graph(left, tables, graphs), width=27, height=2,
                    highlightbackground="green") \
                 .grid(row=0, column=0, columnspan=2, padx=(5, 2), pady=4)
+            self.graphed = False
         else:
             self.graph(tables)
             Button(graphs, text="Exit graph", command=lambda: self.check_graph(left, tables, graphs), width=27, height=2,
-                   highlightbackground="green") \
+                   highlightbackground="green" , fg="red") \
                 .grid(row=0, column=0, columnspan=2, padx=(5, 2), pady=4)
-
-        self.graphed = not self.graphed
-
-    def info_display(self, frame):
-        fig = Figure(figsize=(4, 4), dpi=35)
-
-        subplot = fig.add_subplot(111)
-
-        subplot.get_yaxis().set_visible(False)
-        labels = ['Label 1', 'Label 2', 'Label 3', 'Label 4']
-        colors = []
-
-        fig = plt.figure()
-        fig_legend = plt.figure(figsize=(2, 1.25))
-        ax = fig.add_subplot(111)
-        lines = ax.plot(range(2), range(2), range(2), range(2), range(2), range(2), range(2), range(2))
-        fig_legend.legend(lines, labels, loc='center', frameon=False)
-        plt.show()
-
-        graph = FigureCanvasTkAgg(fig, frame)
-        graph.get_tk_widget().grid(row=1, column=0, rowspan=3, columnspan=3, sticky=N + E + W + S, padx=10, pady=10)
+            Button(graphs, text="Show legend", command=lambda: self.check_legend(left, tables, graphs), width=27,
+                   height=2, highlightbackground="green") \
+                .grid(row=0, column=2, columnspan=2, padx=(2, 4), pady=4)
+            self.legend = False
+            self.graphed = True
 
     def graph(self, frame):
         fig = Figure(figsize=(4, 4), dpi=35)
@@ -296,6 +287,38 @@ class GUI(Frame):
 
         graph = FigureCanvasTkAgg(fig, frame)
         graph.get_tk_widget().grid(row=1, column=0, rowspan=3, columnspan=3, sticky=N + E + W + S, padx=10, pady=10)
+
+    def check_legend(self, left, tables, graphs):
+        if (self.legend):
+            Label(tables, bg = "blue", width = 21, height = 21).grid(row = 1, column = 0, rowspan = 3, columnspan = 3, sticky = N+E+W+S)
+            self.grid3by3(tables)
+            Button(graphs, text="Show legend", command=lambda: self.check_legend(left, tables, graphs), width=27,
+                   height=2, highlightbackground="green") \
+                .grid(row=0, column=2, columnspan=2, padx=(2, 4), pady=4)
+            self.legend = False
+
+        else:
+            self.info_display(tables)
+            Button(graphs, text="Exit legend", command=lambda: self.check_legend(left, tables, graphs), width=27,
+                   height=2, highlightbackground="green" , fg="red") \
+                .grid(row=0, column=2, columnspan=2, padx=(2, 4), pady=4)
+            Button(graphs, text="Show graph", command=lambda: self.check_graph(left, tables, graphs), width=27,
+                   height=2,
+                   highlightbackground="green") \
+                .grid(row=0, column=0, columnspan=2, padx=(5, 2), pady=4)
+            self.graphed = False
+            self.legend = True
+
+
+
+    def info_display(self, frame):
+        im = Image.open("graph_legend.png")
+        im.thumbnail((600, 600))
+        ph = ImageTk.PhotoImage(im)
+
+        label = Label(frame, image = ph, width = 10, height = 10)
+        label.grid(row=1, column=0, rowspan=3, columnspan=3, sticky=N + E + W + S, padx=10, pady=10)
+        label.image = ph
 
     # function for quitting the gamme
     def quit(self):
@@ -332,6 +355,7 @@ class GUI(Frame):
                 self.next['fg'] = "red"
             else:
                 self.update()
+
 
 
 
