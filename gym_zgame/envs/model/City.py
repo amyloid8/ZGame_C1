@@ -587,20 +587,20 @@ class City:
 
             # Update based on deployments
             if DEPLOYMENTS.BITE_CENTER_DISINFECT in nbh.current_deployments:
-                turn_prob = min(1.0, turn_prob * 0.5 ** nbh.current_deployments.count(DEPLOYMENT.BITE_CENTER_DISINFECT))
+                turn_prob = min(1.0, turn_prob * 0.5 ** nbh.current_deployments.count(DEPLOYMENTS.BITE_CENTER_DISINFECT))
             if DEPLOYMENTS.BITE_CENTER_AMPUTATE in nbh.current_deployments:
-                turn_prob = min(1.0, turn_prob * 0.05 ** nbh.current_deployments.count(DEPLOYMENT.BITE_CENTER_AMPUTATE))
+                turn_prob = min(1.0, turn_prob * 0.05 ** nbh.current_deployments.count(DEPLOYMENTS.BITE_CENTER_AMPUTATE))
             if DEPLOYMENTS.BROADCAST_CALL_TO_ARMS in nbh.current_deployments:
                 fight_back_prob = min(1.0, fight_back_prob * 5.0)
-                devour_prob = min(1.0, devour_prob * 1.25 ** nbh.current_deployments.count(DEPLOYMENT.BROADCAST_CALL_TO_ARMS))
+                devour_prob = min(1.0, devour_prob * 1.25 ** nbh.current_deployments.count(DEPLOYMENTS.BROADCAST_CALL_TO_ARMS))
             if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.current_deployments:
-                rise_prob = min(1.0, rise_prob * 10.0 ** nbh.current_deployments.count(DEPLOYMENT.BSL4LAB_SAFETY_OFF))
+                rise_prob = min(1.0, rise_prob * 10.0 ** nbh.current_deployments.count(DEPLOYMENTS.BSL4LAB_SAFETY_OFF))
             if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
-                bite_prob = min(1.0, bite_prob * 0.75 ** nbh.current_deployments.count(DEPLOYMENT.SOCIAL_DISTANCING_SIGNS))
+                bite_prob = min(1.0, bite_prob * 0.75 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS))
                 fight_back_prob = min(1.0, fight_back_prob * 0.75)
             if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.current_deployments:
-                bite_prob = min(1.0, bite_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENT.SOCIAL_DISTANCING_CELEBRITY))
-                fight_back_prob = min(1.0, fight_back_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENT.SOCIAL_DISTANCING_CELEBRITY))
+                bite_prob = min(1.0, bite_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY))
+                fight_back_prob = min(1.0, fight_back_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY))
 
             # Zombie Laws
             for npc in nbh.NPCs:
