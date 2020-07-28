@@ -31,9 +31,12 @@ class GUI(Frame):
         self.list_dead = []
         self.list_zombie = []
         self.xlist = []
+        self.graphed = False
         self.create_widgets()
 
     def create_widgets(self):
+        self.graphed = False
+
         # cmd line UI
         print(self.env.render(mode='human'))
 
@@ -47,11 +50,21 @@ class GUI(Frame):
         tables = Frame(left, bg="blue", width = 21)
         tables.grid(row=1, column=0)
 
+        graphs = Frame(left, bg="green")
+        graphs.grid(row=2, column=0)
+
         # print title "ZGAME"
         Label(title, text="ZGAME", font='Chalkduster 35', justify=LEFT, width=21).grid(row=0, column=0, padx=(6,7), pady=(6,7))
 
         #print 3 by 3 tables of neighborhoods
         self.grid3by3(tables)
+
+        # print 3 buttons for graphs and informations
+        Button(graphs, text = "Show graph", command = lambda : self.check_graph(left, tables, graphs), width=27, height = 2, highlightbackground="green")\
+            .grid(row = 0, column = 0, columnspan = 2, padx = (5,2), pady = 4)
+
+        Button(graphs, text = "Information about graphs", command = lambda : self.check_graph(left, tables, graphs), width=27, height = 2, highlightbackground="green")\
+            .grid(row = 0, column = 2, columnspan = 2, padx = (2,4), pady = 4)
 
         right = Frame(self, bg='#86b8b0',padx=10,pady=44)
         right.grid(row=0, column=1)
@@ -338,18 +351,47 @@ class GUI(Frame):
                text="X", highlightbackground=color
                ).grid(row=row_index, column=col_index, sticky=E + N, padx=padx_value, pady=pady_value)
 
+    def check_graph(self, left, tables, graphs):
+        if (self.graphed):
+            tables = Frame(left, bg="blue", width=21)
+            tables.grid(row=1, column=0)
+            self.grid3by3(tables)
+            Button(graphs, text="Show graph", command=lambda: self.check_graph(left, tables, graphs), width=27, height=2,
+                   highlightbackground="green") \
+                .grid(row=0, column=0, columnspan=2, padx=(5, 2), pady=4)
+        else:
+            self.graph(tables)
+            Button(graphs, text="Exit graph", command=lambda: self.check_graph(left, tables, graphs), width=27, height=2,
+                   highlightbackground="green") \
+                .grid(row=0, column=0, columnspan=2, padx=(5, 2), pady=4)
+
+        self.graphed = not self.graphed
+
+    def info_display(self, frame):
+        fig = Figure(figsize=(4, 4), dpi=35)
+
+        subplot = fig.add_subplot(111)
+
+        subplot.get_yaxis().set_visible(False)
+        labels = ['Label 1', 'Label 2', 'Label 3', 'Label 4']
+        colors = []
+
+        fig = plt.figure()
+        fig_legend = plt.figure(figsize=(2, 1.25))
+        ax = fig.add_subplot(111)
+        lines = ax.plot(range(2), range(2), range(2), range(2), range(2), range(2), range(2), range(2))
+        fig_legend.legend(lines, labels, loc='center', frameon=False)
+        plt.show()
+
+        graph = FigureCanvasTkAgg(fig, frame)
+        graph.get_tk_widget().grid(row=1, column=0, rowspan=3, columnspan=3, sticky=N + E + W + S, padx=10, pady=10)
+
     def graph(self, frame):
         fig = Figure(figsize=(4, 4), dpi=35)
-        # fig.patch.set_facecolor("#00cccc")
-        # subplot = fig.add_subplot(111)
-        # y = [5,1,3,2,6,8]
-        # subplot.plot([1,2,3,4,5,6],y)
-        # subplot.plot([1,2,3,4,5,6],[12,10,9,3,5,6], "ro-")
-        # subplot.get_yaxis().set_visible(False)
 
         subplot = fig.add_subplot(111)
         subplot.plot(self.xlist,self.list_active, "go-")
-        subplot.plot(self.xlist,self.list_sickly, "yo-")
+        subplot.plot(self.xlist,self.list_sickly, "o-", color='#f7941b')
         subplot.plot(self.xlist,self.list_dead, "ro-")
         subplot.plot(self.xlist,self.list_zombie, "bo-")
         subplot.get_yaxis().set_visible(False)
