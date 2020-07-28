@@ -1,3 +1,4 @@
+
 import json
 import uuid
 import gym
@@ -5,7 +6,6 @@ import gym_zgame
 from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
 from GUI import *
-from GUI_2 import *
 from gym_zgame.envs.model.City import City
 
 
@@ -42,8 +42,8 @@ class ZGame:
     def run_gui(self):
         root = Tk()
         root.title("ZGAME")
-        #root.geometry("270x250")
-        #root.resizable(width=False,height=False)
+        # root.geometry("270x250")
+        # root.resizable(width=False,height=False)
         app = GUI(self, root)
         root.mainloop()
         print("HELLO WORLD")
