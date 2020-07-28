@@ -234,7 +234,7 @@ class Neighborhood:
     def update_income(self):
         total_income = 0
         for npc in self.NPCs:
-            if npc.moving:
+            if npc.active:
                 total_income += npc.income
 
         self.income = total_income/(100000*self.num_active) if self.num_active > 0 else 0
@@ -244,7 +244,7 @@ class Neighborhood:
         self.sanitation = self.SANITATION_CONST * (income / self.current_density) if self.current_density > 0 else 0
 
     def update_density(self):
-        self.current_density = (self.num_active / (9 * self.city.get_num_npcs())) * self.baseDensity if self.city.get_num_npcs() > 0 else self.baseDensity
+        self.current_density = (9 * self.num_alive / self.city.get_num_npcs()) * self.baseDensity if self.city.get_num_alive() > 0 else self.baseDensity
 
     def get_data(self):
         self.update_summary_stats()
