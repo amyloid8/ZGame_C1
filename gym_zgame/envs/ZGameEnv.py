@@ -59,7 +59,7 @@ class ZGame(gym.Env):
 
         self.collection_counter = 0
 
-        #keeps track of step number for graphing purposes
+        # keeps track of step number for graphing purposes
         self.step_counter = 0
         self.x_counter = []
 

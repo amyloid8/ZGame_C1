@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from gym_zgame.envs.enums.PLAYER_ACTIONS import DEPLOYMENTS
+import matplotlib.gridspec as gridspec
 
 
 class DataAnalyzer:
@@ -42,8 +43,8 @@ class DataAnalyzer:
 
     def graph_population(self):
         df = self.all_data
-        length = (self.steps * self.envs)//self.interval
-        # length = 1000
+        # length = (self.steps * self.envs)//self.interval
+        length = 2816
         print(self.all_data)
         game_num = list(range(1,length+1))
         fig, axs = plt.subplots(3, sharex=True, sharey=True)
@@ -64,16 +65,6 @@ class DataAnalyzer:
         plt.ylabel('Number of NPC type')
 
         plt.show()
-
-    def graph_dep_trends(self):
-        # length = (self.steps * self.envs)//self.interval
-        length = 5
-        game_num = list(range(1,length+1))
-
-
-
-
-        return
 
     def graph_dep_usage(self):
         print(self.actions_count)
@@ -113,9 +104,77 @@ class DataAnalyzer:
                     actions_count[dep] += 1
         return actions_count
 
+    def scatter_hist(self, x, y, y2, axs, ax_histy):
+
+        ax_histy.tick_params(axis="y", labelleft=True)
+        ax_histy.grid(b=True, which='major', color='#999999', linestyle='-')
+        ax_histy.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+
+        # the scatter plot:
+        axs.scatter(x, y)
+        axs.scatter(x, y2)
+
+        axs.set_xlim(0, 42)
+        axs.set_ylim(0, 30)
+
+        axs.grid(b=True, which='major', color='#999999', linestyle='-')
+        axs.minorticks_on()
+        axs.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+
+        # now determine nice limits by hand:
+        binwidth = 0.25
+        xymax = max(np.max(np.abs(x)), np.max(np.abs(y)))
+        lim = (int(xymax / binwidth) + 1) * binwidth
+
+        bins = np.arange(0, lim + binwidth, binwidth)
+        ax_histy.hist(y+y2, bins=bins, orientation='horizontal')
+        print(y+y2)
+        plt.show()
+
+    def get_actions_trend(self):
+
+        steps = list(range(len(self.dep_record)))
+        actions = self.dep_record
+        print(actions)
+        print(self.get_dep_counts())
+        x_vals = steps
+        # print(x_vals)
+        y_vals_1 = []
+        y_vals_2 = []
+
+        for dep_list in actions.values:
+            if len(dep_list) == 1:
+                dep_list.append(0)
+            y_vals_1.append(dep_list[0])
+            y_vals_2.append(dep_list[1])
+
+        # start with a square Figure
+        fig = plt.figure(figsize=(8, 8))
+        plt.suptitle('Deployment Usage')
+
+        # Add a gridspec with two rows and two columns and a ratio of 2 to 7 between
+        # the size of the marginal axes and the main axes in both directions.
+        # Also adjust the subplot parameters for a square plot.
+        gs = fig.add_gridspec(2, 2, width_ratios=(7, 2), height_ratios=(2, 7),
+                              left=0.12, right=0.9, bottom=0.2, top=1.11,
+                              wspace=0.05, hspace=0.05)
+
+        axs = fig.add_subplot(gs[1, 0])
+
+        ax_histy = fig.add_subplot(gs[1, 1], sharey=axs)
+
+        axs.set_xlabel('Step Number')
+        axs.set_ylabel('Deployment Number')
+
+        # use the previously defined function
+        self.scatter_hist(x_vals, y_vals_1, y_vals_2, axs, ax_histy)
+
+
 
 if __name__ == '__main__':
     analyzer = DataAnalyzer('train_info.json', 'play_config.json')
-    # analyzer.graph_population()
+
+    analyzer.graph_population()
     analyzer.get_dep_counts()
     analyzer.graph_dep_usage()
+    analyzer.get_actions_trend()

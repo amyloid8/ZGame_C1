@@ -25,6 +25,8 @@ class IndividualAnalyzer:
         self.game_info = []
         self.DEP_NAMES = {}
 
+
+
     def get_categories(self):
         categories = list(self.all_data.columns)
         print(categories)
@@ -224,7 +226,7 @@ class IndividualAnalyzer:
         # #
         # # plt.scatter(x_vals, y_vals, s=100, c='red')
         # # sns.jointplot(x=x_vals, y=y_vals_1, data=plt)
-        plt.show()
+
 
 
 if __name__ == '__main__':
@@ -232,7 +234,7 @@ if __name__ == '__main__':
     # a.get_rewards()
     # a.get_category_data('deployments')
     # a.get_categories()
-    a.get_actions_count()
+    # a.get_actions_count()
     a.get_actions_trend()
 
 
