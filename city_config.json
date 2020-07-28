@@ -64,9 +64,31 @@
   "score_config":
     { "active_weight": 2.5,
       "sickly_weight": 0.5,
-      "fear_weight": 0.2,
-      "zombie_weight": 2.0,
-      "dead_weight": 3.0,
-      "ashen_weight": 3.0,
-      "resource_weight": 1.0}
+      "fear_weight": -0.2,
+      "zombie_weight": -2.0,
+      "dead_weight": -3.0,
+      "ashen_weight": -3.0,
+      "resource_weight": 1.0},
+  "spawn_chances":
+    { "income_multiplier": 1.2,
+      "zombie": 0.9,
+      "flu":  0.9},
+  "trans_probs":
+    { "sanitation_const": 1,
+      "burial": 0.1,
+      "recover": 0.25,
+      "pneumonia": 0.01,
+      "incubate": 0.25,
+      "fumes": 0.01,
+      "mutate": 0.01,
+      "turn": 0.2,
+      "devour": 0.5,
+      "fight_back": 0.01,
+      "collapse": 0.1,
+      "rise": 0.1},
+  "income_prob":
+  {
+    "low": 0.5,
+    "high": 0.1}
+
 }
