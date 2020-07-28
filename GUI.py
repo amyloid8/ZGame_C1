@@ -30,6 +30,8 @@ class GUI(Frame):
         self.list_zombie = []
         self.xlist = []
         self.create_widgets()
+        self.ar1=0
+        self.ar2=0
 
     def set1A(self):
         self.ar1 = 0
@@ -131,139 +133,6 @@ class GUI(Frame):
                     indicatoron=0, width=5).grid(column=1, row=18, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
         Radiobutton(right, bg='#5e817b', variable=x, value=4, text="Remove", padx=20, command=self.set2R,
                     indicatoron=0, width=5).grid(column=1, row=20, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
-
-    # fig = Figure(figsize=(4.2, 4), dpi=100)
-    # plt = fig.add_subplot(111)
-    # exp_vals = [1400, 600, 300, 410, 250]
-    # exp_labels = ["a", "b", "c", "d", "e"]
-    # plt.plot(exp_vals, exp_labels)
-    # plt.axis("equal")
-    # pie2 = FigureCanvasTkAgg(fig, frame)
-    # pie2.get_tk_widget().grid(row=1, column=0, sticky=W, padx = (10, 5), pady = (10,5))
-
-    # new_york = float("100")
-    # paris = float("80")
-    # london = float("60")
-    # titan = float("40")
-    # brooklyn = float("0")
-    #
-    # fig = Figure(figsize=(4.5, 4), dpi=38)
-    # subplot = fig.add_subplot(111)
-    # labels2 = 'a', 'b', 'c', 'd', 'e'
-    # pieSizes = [float(new_york), float(paris), float(london), float(titan), float(brooklyn)]
-    # explode2 = (0, 0, 0, 0, 0)
-    # subplot.pie(pieSizes, explode=explode2, labels=labels2, shadow=True, startangle=90)
-    # subplot.axis('equal')
-    # pie2 = FigureCanvasTkAgg(fig, frame)
-    # pie2.get_tk_widget().grid(row=1, column=0, sticky=W, padx=(10, 5), pady=(10, 5))
-
-    # printing information for NW
-    # Label(frame,
-    #       text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
-    #       .format(self.env.city.mask_visible_data(nbh_nw, nbh_nw.num_active).name,
-    #               self.env.city.mask_visible_data(nbh_nw, nbh_nw.num_sickly).name,
-    #               self.env.city.mask_visible_data(nbh_nw, nbh_nw.num_zombie).name,
-    #               self.env.city.mask_visible_data(nbh_nw, nbh_nw.num_dead).name,
-    #               nbh_nw.orig_alive,
-    #               nbh_nw.orig_dead,
-    #               nbh_nw.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-    #       ).grid(row=1, column=0, sticky=W, padx = (10, 5), pady = (10,5))
-    #
-    # # printing information for N
-    # Label(frame,
-    #       text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
-    #       .format(self.env.city.mask_visible_data(nbh_n, nbh_n.num_active).name,
-    #               self.env.city.mask_visible_data(nbh_n, nbh_n.num_sickly).name,
-    #               self.env.city.mask_visible_data(nbh_n, nbh_n.num_zombie).name,
-    #               self.env.city.mask_visible_data(nbh_n, nbh_n.num_dead).name,
-    #               nbh_n.orig_alive,
-    #               nbh_n.orig_dead,
-    #               nbh_n.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00ff80"
-    #       ).grid(row=1, column=1, sticky=W, padx = 5, pady = (10,5))
-    #
-    # # printing information for NE
-    # Label(frame,
-    #       text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
-    #       .format(self.env.city.mask_visible_data(nbh_ne, nbh_ne.num_active).name,
-    #               self.env.city.mask_visible_data(nbh_ne, nbh_ne.num_sickly).name,
-    #               self.env.city.mask_visible_data(nbh_ne, nbh_ne.num_zombie).name,
-    #               self.env.city.mask_visible_data(nbh_ne, nbh_ne.num_dead).name,
-    #               nbh_ne.orig_alive,
-    #               nbh_ne.orig_dead,
-    #               nbh_ne.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-    #       ).grid(row=1, column=2, sticky=W, padx = (5,10), pady = (10,5))
-    #
-    # # printing information for W
-    # Label(frame,
-    #       text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
-    #       .format(self.env.city.mask_visible_data(nbh_w, nbh_w.num_active).name,
-    #               self.env.city.mask_visible_data(nbh_w, nbh_w.num_sickly).name,
-    #               self.env.city.mask_visible_data(nbh_w, nbh_w.num_zombie).name,
-    #               self.env.city.mask_visible_data(nbh_w, nbh_w.num_dead).name,
-    #               nbh_w.orig_alive,
-    #               nbh_w.orig_dead,
-    #               nbh_w.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00ff80"
-    #       ).grid(row=2, column=0, sticky=W, padx = (10, 5), pady = 5)
-    #
-    # # printing information for C
-    # Label(frame,
-    #       text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
-    #       .format(self.env.city.mask_visible_data(nbh_c, nbh_c.num_active).name,
-    #               self.env.city.mask_visible_data(nbh_c, nbh_c.num_sickly).name,
-    #               self.env.city.mask_visible_data(nbh_c, nbh_c.num_zombie).name,
-    #               self.env.city.mask_visible_data(nbh_c, nbh_c.num_dead).name,
-    #               nbh_c.orig_alive,
-    #               nbh_c.orig_dead,
-    #               nbh_c.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-    #       ).grid(row=2, column=1, sticky=W, padx = 5, pady = 5)
-    #
-    # # printing information for E
-    # Label(frame,
-    #       text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
-    #       .format(self.env.city.mask_visible_data(nbh_e, nbh_e.num_active).name,
-    #               self.env.city.mask_visible_data(nbh_e, nbh_e.num_sickly).name,
-    #               self.env.city.mask_visible_data(nbh_e, nbh_e.num_zombie).name,
-    #               self.env.city.mask_visible_data(nbh_e, nbh_e.num_dead).name,
-    #               nbh_e.orig_alive,
-    #               nbh_e.orig_dead,
-    #               nbh_e.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00ff80"
-    #       ).grid(row=2, column=2, sticky=W, padx = (5,10), pady = 5)
-    #
-    # # printing information for SW
-    # Label(frame,
-    #       text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
-    #       .format(self.env.city.mask_visible_data(nbh_sw, nbh_sw.num_active).name,
-    #               self.env.city.mask_visible_data(nbh_sw, nbh_sw.num_sickly).name,
-    #               self.env.city.mask_visible_data(nbh_sw, nbh_sw.num_zombie).name,
-    #               self.env.city.mask_visible_data(nbh_sw, nbh_sw.num_dead).name,
-    #               nbh_sw.orig_alive,
-    #               nbh_sw.orig_dead,
-    #               nbh_sw.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-    #       ).grid(row=3, column=0, sticky=W, padx = (10, 5), pady = (5,10))
-    #
-    # # printing information for S
-    # Label(frame,
-    #       text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
-    #       .format(self.env.city.mask_visible_data(nbh_s, nbh_s.num_active).name,
-    #               self.env.city.mask_visible_data(nbh_s, nbh_s.num_sickly).name,
-    #               self.env.city.mask_visible_data(nbh_s, nbh_s.num_zombie).name,
-    #               self.env.city.mask_visible_data(nbh_s, nbh_s.num_dead).name,
-    #               nbh_s.orig_alive,
-    #               nbh_s.orig_dead,
-    #               nbh_s.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00ff80"
-    #       ).grid(row=3, column=1, sticky=W, padx = 5, pady = (5,10))
-    #
-    # # printing information for SE
-    # Label(frame,
-    #       text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
-    #       .format(self.env.city.mask_visible_data(nbh_se, nbh_se.num_active).name,
-    #               self.env.city.mask_visible_data(nbh_se, nbh_se.num_sickly).name,
-    #               self.env.city.mask_visible_data(nbh_se, nbh_se.num_zombie).name,
-    #               self.env.city.mask_visible_data(nbh_se, nbh_se.num_dead).name,
-    #               nbh_se.orig_alive,
-    #               nbh_se.orig_dead,
-    #               nbh_se.get_current_deps()), justify=LEFT, width = 18, height = 9, bg="#00cccc"
-    #       ).grid(row=3, column=2, sticky=W, padx = (5,10), pady = (5,10))
 
     def grid3by3(self, frame):
 
@@ -395,10 +264,10 @@ class GUI(Frame):
         deployment_1 = int(self.dep1.get())
         location_2 = int(self.loc2.get())
         deployment_2 = int(self.dep2.get())
-        actions = self.env.encode_raw_action(add_1=0,
+        actions = self.env.encode_raw_action(add_1=self.ar1,
                                              location_1=LOCATIONS(location_1),
                                              deployment_1=DEPLOYMENTS(deployment_1),
-                                             add_2=0,
+                                             add_2=self.ar2,
                                              location_2=LOCATIONS(location_2),
                                              deployment_2=DEPLOYMENTS(deployment_2))
         observation, reward, done, info = self.env.step(actions)
