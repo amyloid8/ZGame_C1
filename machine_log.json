@@ -12,7 +12,6 @@
 {"score": -5.0, "reward": -5.0, "total_score": -14.0, "deployments": [25, 0], "alive": 10, "dead": 221, "ashen": 7, "human": 0, "zombie": 235, "healthy": 189, "flu": 0, "immune": 49}
 {"score": -5.0, "reward": -5.0, "total_score": -19.0, "deployments": [0, 0], "alive": 7, "dead": 228, "ashen": 3, "human": 0, "zombie": 235, "healthy": 189, "flu": 0, "immune": 49}
 {"score": -5.0, "reward": -5.0, "total_score": -24.0, "deployments": [16, 0], "alive": 7, "dead": 229, "ashen": 2, "human": 0, "zombie": 236, "healthy": 189, "flu": 0, "immune": 49}
-{"alive": 7, "dead": 229, "ashen": 2, "human": 0, "zombie": 236, "healthy": 189, "flu": 0, "immune": 49, "score": -5.0, "reward": -5.0, "total_score": -24.0, "deployments": [16, 0], "total reward": 17.0, "game ID": "11cce23a-6b05-417e-9df7-fdae6b6869ea"}
 {"score": 8.0, "reward": 8.0, "total_score": 8.0, "deployments": [0, 0], "alive": 158, "dead": 48, "ashen": 16, "human": 133, "zombie": 56, "healthy": 169, "flu": 26, "immune": 23}
 {"score": 4.0, "reward": 4.0, "total_score": 12.0, "deployments": [0, 19], "alive": 110, "dead": 86, "ashen": 26, "human": 82, "zombie": 80, "healthy": 169, "flu": 19, "immune": 34}
 {"score": 3.0, "reward": 3.0, "total_score": 15.0, "deployments": [0, 11], "alive": 91, "dead": 103, "ashen": 28, "human": 36, "zombie": 109, "healthy": 169, "flu": 10, "immune": 43}
