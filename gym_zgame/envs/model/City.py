@@ -138,6 +138,9 @@ class City:
     def get_num_npcs(self):
         return self.num_npcs
 
+    def get_num_alive(self):
+        return self.num_alive
+
 
     def _init_neighborhood_threats(self):
         # Add 10 dead in a random location
@@ -236,10 +239,12 @@ class City:
                 if loc is nbh.location:
                     nbh_index = i
             self._add_building_to_location(nbh_index, dep) if add == 0 else self._remove_building_from_location(nbh_index, dep)
-            self.update_states()
+        
+        self.update_states()
         self.reset_bags()
         self.adjust_bags_for_deployments()
         self.process_moves()
+        self.remove_onetime_deployments()
         # Update state info
         done = self.check_done()
         self.update_summary_stats()
@@ -344,28 +349,24 @@ class City:
         self.update_summary_stats()
         for nbh_index in range(len(self.neighborhoods)):
             nbh = self.neighborhoods[nbh_index]
-            for dep in nbh.current_deployments:
-                if dep is DEPLOYMENTS.Z_CURE_CENTER_FDA:
-                    self._art_trans_z_cure_center_fda(nbh_index)
-                elif dep is DEPLOYMENTS.Z_CURE_CENTER_EXP:
-                    self._art_trans_z_cure_center_exp(nbh_index)
-                elif dep is DEPLOYMENTS.FLU_VACCINE_OPT:
-                    self._art_trans_flu_vaccine_free(nbh_index)
-                elif dep is DEPLOYMENTS.FLU_VACCINE_MAN:
-                    self._art_trans_flu_vaccine_man(nbh_index)
-                elif dep is DEPLOYMENTS.KILN_NO_QUESTIONS:
-                    self._art_trans_kiln_no_questions(nbh_index)
-                elif dep is DEPLOYMENTS.SNIPER_TOWER_CONFIRM:
-                    self._art_trans_sniper_tower_confirm(nbh_index)
-                elif dep is DEPLOYMENTS.SNIPER_TOWER_FREE:
-                    self._art_trans_sniper_tower_free(nbh_index)
-                elif dep is DEPLOYMENTS.FIREBOMB_BARRAGE:
-                    self._art_trans_firebomb_barrage(nbh_index)
 
-                #removed firebomb barrage because it clears the active deployments before this check
-                if dep in (DEPLOYMENTS.FIREBOMB_PRIMED,DEPLOYMENTS.RALLY_POINT_OPT,DEPLOYMENTS.RALLY_POINT_FULL):
-                    nbh.add_to_archives(dep)
-                    nbh.remove_deployment(dep)
+            if DEPLOYMENTS.FIREBOMB_BARRAGE in nbh.current_deployments:
+                self._art_trans_firebomb_barrage(nbh_index)
+            if DEPLOYMENTS.Z_CURE_CENTER_FDA in nbh.current_deployments:
+                self._art_trans_z_cure_center_fda(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.Z_CURE_CENTER_FDA))
+            if DEPLOYMENTS.Z_CURE_CENTER_EXP in nbh.current_deployments:
+                self._art_trans_z_cure_center_exp(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.Z_CURE_CENTER_EXP))
+            if DEPLOYMENTS.FLU_VACCINE_OPT in nbh.current_deployments:
+                self._art_trans_flu_vaccine_free(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.FLU_VACCINE_OPT))
+            if DEPLOYMENTS.FLU_VACCINE_MAN in nbh.current_deployments:
+                self._art_trans_flu_vaccine_man(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.FLU_VACCINE_MAN))
+            if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.current_deployments:
+                self._art_trans_kiln_no_questions(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.KILN_NO_QUESTIONS))
+            if DEPLOYMENTS.SNIPER_TOWER_CONFIRM in nbh.current_deployments:
+                self._art_trans_sniper_tower_confirm(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.SNIPER_TOWER_CONFIRM))
+            if DEPLOYMENTS.SNIPER_TOWER_FREE in nbh.current_deployments:
+                self._art_trans_sniper_tower_free(nbh_index, nbh.current_deployments.count(DEPLOYMENTS.SNIPER_TOWER_FREE))
+                
         self.update_summary_stats()
 
     # will provide a random factor between 0 and 1 depending on the fear level.
@@ -382,9 +383,10 @@ class City:
             factor = 1
         return factor
 
-    def _art_trans_z_cure_center_fda(self, nbh_index):
-        bite_cure_prob = 0.25 * self._rand_fear_prob_factor() # reduces cure probability
-        zombie_cure_prob = 0.01 * self._rand_fear_prob_factor()
+    # Probabilities for multiple deployments are based on binomial distribution
+    def _art_trans_z_cure_center_fda(self, nbh_index, num_deps):
+        bite_cure_prob = 1.0-(1.0-(0.25 * self._rand_fear_prob_factor())**num_deps) # reduces cure probability
+        zombie_cure_prob = 1.0-(1.0-(0.01 * self._rand_fear_prob_factor())**num_deps)
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE_BITTEN:
@@ -394,10 +396,10 @@ class City:
                 if random.random() <= zombie_cure_prob:
                     npc.change_zombie_state(NPC_STATES_ZOMBIE.ZOMBIE_BITTEN)
 
-    def _art_trans_z_cure_center_exp(self, nbh_index):
-        bite_cure_prob = 0.33 * self._rand_fear_prob_factor()
-        bite_cure_fail_prob = 0.5 * self._rand_fear_prob_factor()
-        zombie_cure_prob = 0.33 * self._rand_fear_prob_factor()
+    def _art_trans_z_cure_center_exp(self, nbh_index, num_deps):
+        bite_cure_prob = 1.0-(1.0-(0.33 * self._rand_fear_prob_factor())**num_deps)
+        bite_cure_fail_prob = 1.0-(1.0-(0.5 * self._rand_fear_prob_factor())**num_deps)
+        zombie_cure_prob = 1.0-(1.0-(0.33 * self._rand_fear_prob_factor())**num_deps)
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE_BITTEN:
@@ -410,26 +412,27 @@ class City:
                 if random.random() <= zombie_cure_prob:
                     npc.change_zombie_state(NPC_STATES_ZOMBIE.ZOMBIE_BITTEN)
 
-    def _art_trans_flu_vaccine_free(self, nbh_index):
+    def _art_trans_flu_vaccine_free(self, nbh_index, num_deps):
         nbh = self.neighborhoods[nbh_index]
         vaccine_success = max(0, 0.2 - (0.01 * self.fear)) * self._rand_fear_prob_factor()
+        vaccine_success = 1.0-(1.0-(vaccine_success)**num_deps)
         for npc in nbh.NPCs:
             if (npc.state_flu is not NPC_STATES_FLU.IMMUNE) and (npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE):
                 if random.random() <= vaccine_success:
                     npc.change_flu_state(NPC_STATES_FLU.IMMUNE)
 
-    def _art_trans_flu_vaccine_man(self, nbh_index):
+    def _art_trans_flu_vaccine_man(self, nbh_index, num_deps):
         nbh = self.neighborhoods[nbh_index]
-        vaccine_success = 0.5 * self._rand_fear_prob_factor()
+        vaccine_success = 1.0-(1.0-(0.5 * self._rand_fear_prob_factor())**num_deps)
         for npc in nbh.NPCs:
             if (npc.state_flu is not NPC_STATES_FLU.IMMUNE) and (npc.state_zombie is not NPC_STATES_ZOMBIE.ZOMBIE):
                 if random.random() <= vaccine_success:
                     npc.change_flu_state(NPC_STATES_FLU.IMMUNE)
 
-    def _art_trans_kiln_no_questions(self, nbh_index):
-        zombie_burn_prob = 0.1 * self._rand_fear_prob_factor()
-        sick_burn_prob = 0.05 * self._rand_fear_prob_factor()
-        active_burn_prob = 0.01 * self._rand_fear_prob_factor()
+    def _art_trans_kiln_no_questions(self, nbh_index, num_deps):
+        zombie_burn_prob = 1.0-(1.0-(0.1 * self._rand_fear_prob_factor())**num_deps)
+        sick_burn_prob = 1.0-(1.0-(0.05 * self._rand_fear_prob_factor())**num_deps)
+        active_burn_prob = 1.0-(1.0-(0.01 * self._rand_fear_prob_factor())**num_deps)
         nbh = self.neighborhoods[nbh_index]
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE:
@@ -442,19 +445,23 @@ class City:
                 if random.random() <= active_burn_prob:
                     npc.change_dead_state(NPC_STATES_DEAD.ASHEN)
 
-    def _art_trans_sniper_tower_confirm(self, nbh_index):
+    def _art_trans_sniper_tower_confirm(self, nbh_index, num_deps):
         nbh = self.neighborhoods[nbh_index]
         zombie_shot_prob = 1 / nbh.num_zombie if nbh.num_zombie > 0 else 0
+        zombie_shot_prob = 1.0-(1.0-(zombie_shot_prob)**num_deps)
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE:
                 if random.random() <= zombie_shot_prob:
                     npc.change_dead_state(NPC_STATES_DEAD.DEAD)
 
-    def _art_trans_sniper_tower_free(self, nbh_index):
+    def _art_trans_sniper_tower_free(self, nbh_index, num_deps):
         nbh = self.neighborhoods[nbh_index]
         zombie_shot_prob = 1 / nbh.num_moving if nbh.num_moving > 0 else 0
+        zombie_shot_prob = 1.0-(1.0-(zombie_shot_prob)**num_deps)
         zombie_bitten_shot_prob = 0.5 * (nbh.num_zombie_bitten / nbh.num_moving) if nbh.num_moving > 0 else 0
+        zombie_bitten_shot_prob = 1.0-(1.0-(zombie_bitten_shot_prob)**num_deps)
         flu_shot_prob = 0.5 * (nbh.num_flu / nbh.num_moving) if nbh.num_moving > 0 else 0
+        flu_shot_prob - 1.0-(1.0-(flu_shot_prob)**num_deps)
         for npc in nbh.NPCs:
             if npc.state_zombie is NPC_STATES_ZOMBIE.ZOMBIE:
                 if random.random() <= zombie_shot_prob:
@@ -501,6 +508,7 @@ class City:
 
             # Update based on deployments
 
+            # Raises probability factor to power of n deployments
             if DEPLOYMENTS.KILN_OVERSIGHT in nbh.current_deployments:
                 burial_prob = min(1.0, burial_prob * 1.5 ** nbh.current_deployments.count(DEPLOYMENTS.KILN_OVERSIGHT))
             if DEPLOYMENTS.KILN_NO_QUESTIONS in nbh.current_deployments:
@@ -582,20 +590,20 @@ class City:
 
             # Update based on deployments
             if DEPLOYMENTS.BITE_CENTER_DISINFECT in nbh.current_deployments:
-                turn_prob = min(1.0, turn_prob * 0.5)
+                turn_prob = min(1.0, turn_prob * 0.5 ** nbh.current_deployments.count(DEPLOYMENTS.BITE_CENTER_DISINFECT))
             if DEPLOYMENTS.BITE_CENTER_AMPUTATE in nbh.current_deployments:
-                turn_prob = min(1.0, turn_prob * 0.05)
+                turn_prob = min(1.0, turn_prob * 0.05 ** nbh.current_deployments.count(DEPLOYMENTS.BITE_CENTER_AMPUTATE))
             if DEPLOYMENTS.BROADCAST_CALL_TO_ARMS in nbh.current_deployments:
                 fight_back_prob = min(1.0, fight_back_prob * 5.0)
-                devour_prob = min(1.0, devour_prob * 1.25)
+                devour_prob = min(1.0, devour_prob * 1.25 ** nbh.current_deployments.count(DEPLOYMENTS.BROADCAST_CALL_TO_ARMS))
             if DEPLOYMENTS.BSL4LAB_SAFETY_OFF in nbh.current_deployments:
-                rise_prob = min(1.0, rise_prob * 10.0)
+                rise_prob = min(1.0, rise_prob * 10.0 ** nbh.current_deployments.count(DEPLOYMENTS.BSL4LAB_SAFETY_OFF))
             if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
-                bite_prob = min(1.0, bite_prob * 0.75)
+                bite_prob = min(1.0, bite_prob * 0.75 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS))
                 fight_back_prob = min(1.0, fight_back_prob * 0.75)
-            if DEPLOYMENTS.SOCIAL_DISTANCING_SIGNS in nbh.current_deployments:
-                bite_prob = min(1.0, bite_prob * 0.25)
-                fight_back_prob = min(1.0, fight_back_prob * 0.25)
+            if DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY in nbh.current_deployments:
+                bite_prob = min(1.0, bite_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY))
+                fight_back_prob = min(1.0, fight_back_prob * 0.25 ** nbh.current_deployments.count(DEPLOYMENTS.SOCIAL_DISTANCING_CELEBRITY))
 
             # Zombie Laws
             for npc in nbh.NPCs:
@@ -928,6 +936,10 @@ class City:
             nbh_old.remove_NPC(NPC)
             nbh_new.add_NPC(NPC)
 
+    def remove_onetime_deployments(self):
+        for nbh_index in range(len(self.neighborhoods)):
+            self.neighborhoods[nbh_index].current_deployments = [x for x in self.neighborhoods[nbh_index].current_deployments if x != DEPLOYMENTS.RALLY_POINT_FULL and x != DEPLOYMENTS.RALLY_POINT_OPT]
+
     def check_done(self):
         return self.turn >= self.max_turns
 
@@ -1037,6 +1049,9 @@ class City:
 
         return state
 
+    def getNeiborhoods(self):
+        return self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.get_score(), self.total_score
+
     def human_encode(self):
         city_data = self.get_data()
         nbhs_data = []
@@ -1052,10 +1067,6 @@ class City:
                                                                                      self.score, self.total_score)
         print(minimal_report)
         return minimal_report
-
-    def getNeiborhoods(self):
-        return self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.get_score(), self.total_score
-
 
     def human_render(self):
         # Build up console output
@@ -1098,132 +1109,87 @@ class City:
             nbh_sw = nbh if nbh.location is LOCATIONS.SW else nbh_sw
 
         city = PBack.blue + '=====================================  CITY STATUS  ========================================' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Active: {}'.format(
-            self.mask_visible_data(nbh_nw, nbh_nw.num_active).name).ljust(23) + \
+        city += PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self.mask_visible_data(nbh_nw, nbh_nw.num_active).name).ljust(23) + \
                 PFont.bold + PFont.underline + PFore.purple + '(NW)' + PControl.reset + ' ' + \
-                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(
-            self.mask_visible_data(nbh_n, nbh_n.num_active).name).ljust(24) + \
+                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self.mask_visible_data(nbh_n, nbh_n.num_active).name).ljust(24) + \
                 PFont.bold + PFont.underline + PFore.purple + '(N)' + PControl.reset + ' ' + \
-                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(
-            self.mask_visible_data(nbh_ne, nbh_ne.num_active).name).ljust(23) + \
+                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self.mask_visible_data(nbh_ne, nbh_ne.num_active).name).ljust(23) + \
                 PFont.bold + PFont.underline + PFore.purple + '(NE)' + PControl.reset + ' ' + PBack.blue + '==' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(
-            self.mask_visible_data(nbh_nw, nbh_nw.num_sickly).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(
-            self.mask_visible_data(nbh_n, nbh_n.num_sickly).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(
-            self.mask_visible_data(nbh_ne, nbh_ne.num_sickly).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(
-            self.mask_visible_data(nbh_nw, nbh_nw.num_zombie).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(
-            self.mask_visible_data(nbh_n, nbh_n.num_zombie).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(
-            self.mask_visible_data(nbh_ne, nbh_ne.num_zombie).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(
-            self.mask_visible_data(nbh_nw, nbh_nw.num_dead).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(
-            self.mask_visible_data(nbh_n, nbh_n.num_dead).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(
-            self.mask_visible_data(nbh_ne, nbh_ne.num_dead).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(self.mask_visible_data(nbh_nw, nbh_nw.num_sickly).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(self.mask_visible_data(nbh_n, nbh_n.num_sickly).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(self.mask_visible_data(nbh_ne, nbh_ne.num_sickly).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(self.mask_visible_data(nbh_nw, nbh_nw.num_zombie).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(self.mask_visible_data(nbh_n, nbh_n.num_zombie).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(self.mask_visible_data(nbh_ne, nbh_ne.num_zombie).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(self.mask_visible_data(nbh_nw, nbh_nw.num_dead).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(self.mask_visible_data(nbh_n, nbh_n.num_dead).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(self.mask_visible_data(nbh_ne, nbh_ne.num_dead).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_nw.orig_alive).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_n.orig_alive).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_ne.orig_alive).ljust(
-            28) + PBack.blue + '==' + PBack.reset + '\n'
+                PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_ne.orig_alive).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_nw.orig_dead).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_n.orig_dead).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_ne.orig_dead).ljust(
-            28) + PBack.blue + '==' + PBack.reset + '\n'
+                PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_ne.orig_dead).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_nw.get_current_deps()).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_n.get_current_deps()).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_ne.get_current_deps()).ljust(
-            28) + PBack.blue + '==' + PBack.reset + '\n'
+                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_ne.get_current_deps()).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '============================================================================================' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Active: {}'.format(
-            self.mask_visible_data(nbh_w, nbh_w.num_active).name).ljust(24) + \
+        city += PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self.mask_visible_data(nbh_w, nbh_w.num_active).name).ljust(24) + \
                 PFont.bold + PFont.underline + PFore.purple + '(W)' + PControl.reset + ' ' + \
-                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(
-            self.mask_visible_data(nbh_c, nbh_c.num_active).name).ljust(24) + \
+                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self.mask_visible_data(nbh_c, nbh_c.num_active).name).ljust(24) + \
                 PFont.bold + PFont.underline + PFore.purple + '(C)' + PControl.reset + ' ' + \
-                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(
-            self.mask_visible_data(nbh_e, nbh_e.num_active).name).ljust(24) + \
+                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self.mask_visible_data(nbh_e, nbh_e.num_active).name).ljust(24) + \
                 PFont.bold + PFont.underline + PFore.purple + '(E)' + PControl.reset + ' ' + PBack.blue + '==' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(
-            self.mask_visible_data(nbh_w, nbh_w.num_sickly).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(
-            self.mask_visible_data(nbh_c, nbh_c.num_sickly).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(
-            self.mask_visible_data(nbh_e, nbh_e.num_sickly).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(
-            self.mask_visible_data(nbh_w, nbh_w.num_zombie).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(
-            self.mask_visible_data(nbh_c, nbh_c.num_zombie).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(
-            self.mask_visible_data(nbh_e, nbh_e.num_zombie).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(
-            self.mask_visible_data(nbh_w, nbh_w.num_dead).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(
-            self.mask_visible_data(nbh_c, nbh_c.num_dead).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(
-            self.mask_visible_data(nbh_e, nbh_e.num_dead).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(self.mask_visible_data(nbh_w, nbh_w.num_sickly).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(self.mask_visible_data(nbh_c, nbh_c.num_sickly).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(self.mask_visible_data(nbh_e, nbh_e.num_sickly).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(self.mask_visible_data(nbh_w, nbh_w.num_zombie).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(self.mask_visible_data(nbh_c, nbh_c.num_zombie).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(self.mask_visible_data(nbh_e, nbh_e.num_zombie).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(self.mask_visible_data(nbh_w, nbh_w.num_dead).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(self.mask_visible_data(nbh_c, nbh_c.num_dead).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(self.mask_visible_data(nbh_e, nbh_e.num_dead).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_w.orig_alive).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_c.orig_alive).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_e.orig_alive).ljust(
-            28) + PBack.blue + '==' + PBack.reset + '\n'
+                PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_e.orig_alive).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_w.orig_dead).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_c.orig_dead).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_e.orig_dead).ljust(
-            28) + PBack.blue + '==' + PBack.reset + '\n'
+                PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_e.orig_dead).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_w.get_current_deps()).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_c.get_current_deps()).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_e.get_current_deps()).ljust(
-            28) + PBack.blue + '==' + PBack.reset + '\n'
+                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_e.get_current_deps()).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '============================================================================================' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Active: {}'.format(
-            self.mask_visible_data(nbh_sw, nbh_sw.num_active).name).ljust(23) + \
+        city += PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self.mask_visible_data(nbh_sw, nbh_sw.num_active).name).ljust(23) + \
                 PFont.bold + PFont.underline + PFore.purple + '(SW)' + PControl.reset + ' ' + \
-                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(
-            self.mask_visible_data(nbh_s, nbh_s.num_active).name).ljust(24) + \
+                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self.mask_visible_data(nbh_s, nbh_s.num_active).name).ljust(24) + \
                 PFont.bold + PFont.underline + PFore.purple + '(S)' + PControl.reset + ' ' + \
-                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(
-            self.mask_visible_data(nbh_se, nbh_se.num_active).name).ljust(23) + \
+                PBack.blue + '==' + PBack.reset + ' Active: {}'.format(self.mask_visible_data(nbh_se, nbh_se.num_active).name).ljust(23) + \
                 PFont.bold + PFont.underline + PFore.purple + '(SE)' + PControl.reset + ' ' + PBack.blue + '==' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(
-            self.mask_visible_data(nbh_sw, nbh_sw.num_sickly).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(
-            self.mask_visible_data(nbh_s, nbh_s.num_sickly).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(
-            self.mask_visible_data(nbh_se, nbh_se.num_sickly).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(
-            self.mask_visible_data(nbh_sw, nbh_sw.num_zombie).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(
-            self.mask_visible_data(nbh_s, nbh_s.num_zombie).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(
-            self.mask_visible_data(nbh_se, nbh_se.num_zombie).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
-        city += PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(
-            self.mask_visible_data(nbh_sw, nbh_sw.num_dead).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(
-            self.mask_visible_data(nbh_s, nbh_s.num_dead).name).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(
-            self.mask_visible_data(nbh_se, nbh_se.num_dead).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(self.mask_visible_data(nbh_sw, nbh_sw.num_sickly).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(self.mask_visible_data(nbh_s, nbh_s.num_sickly).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Sickly: {}'.format(self.mask_visible_data(nbh_se, nbh_se.num_sickly).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(self.mask_visible_data(nbh_sw, nbh_sw.num_zombie).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(self.mask_visible_data(nbh_s, nbh_s.num_zombie).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Zombies: {}'.format(self.mask_visible_data(nbh_se, nbh_se.num_zombie).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
+        city += PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(self.mask_visible_data(nbh_sw, nbh_sw.num_dead).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(self.mask_visible_data(nbh_s, nbh_s.num_dead).name).ljust(28) + \
+                PBack.blue + '==' + PBack.reset + ' Dead: {}'.format(self.mask_visible_data(nbh_se, nbh_se.num_dead).name).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_sw.orig_alive).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_s.orig_alive).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_se.orig_alive).ljust(
-            28) + PBack.blue + '==' + PBack.reset + '\n'
+                PBack.blue + '==' + PBack.reset + ' Living at Start: {}'.format(nbh_se.orig_alive).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_sw.orig_dead).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_s.orig_dead).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_se.orig_dead).ljust(
-            28) + PBack.blue + '==' + PBack.reset + '\n'
+                PBack.blue + '==' + PBack.reset + ' Dead at Start: {}'.format(nbh_se.orig_dead).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_sw.get_current_deps()).ljust(28) + \
                 PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_s.get_current_deps()).ljust(28) + \
-                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_se.get_current_deps()).ljust(
-            28) + PBack.blue + '==' + PBack.reset + '\n'
+                PBack.blue + '==' + PBack.reset + ' Deployments: {}'.format(nbh_se.get_current_deps()).ljust(28) + PBack.blue + '==' + PBack.reset + '\n'
         city += PBack.blue + '============================================================================================' + PBack.reset + '\n'
 
         fancy_string += city
 
         # Close out console output
-        print(fancy_string)
         fancy_string += ebuffer
+        print(fancy_string)
         return fancy_string
 
     @staticmethod
