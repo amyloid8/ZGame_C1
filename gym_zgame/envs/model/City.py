@@ -58,6 +58,9 @@ class City:
         # Keep summary stats up to date for ease
 
 
+        self.all_deployments = []
+        self.turn_deployments = []
+
         # interval of [-10,10] where 10 is big fear
         self.DEP_FEAR_WEIGHTS = {}
 
@@ -77,6 +80,31 @@ class City:
         self.DEP_RESOURCE_COST.update(data["resource_config"])
         self.SCORE_WEIGHTS.update(data["score_config"])
 
+    def get_city_stats(self):
+        info = []
+        info.append([
+            self.total_score,
+            self.fear,
+            self.resources,
+
+            self.num_npcs,
+            self.num_alive,
+            self.num_dead,
+            self.num_ashen,
+            self.num_human,
+            self.num_zombie_bitten,
+            self.num_zombie,
+            self.num_healthy,
+            self.num_incubating,
+            self.num_flu,
+            self.num_immune,
+            self.num_moving,
+            self.num_active,
+            self.num_sickly
+        ])
+        return info
+
+
     def get_cost_dict(self):
         return self.DEP_RESOURCE_COST
 
@@ -88,6 +116,11 @@ class City:
         else:
             return 0
 
+    def get_turn_score(self):
+        return self.score
+
+    def get_total_score(self):
+        return self.total_score
 
     def _init_neighborhoods(self, loc_npc_range):
         center = Neighborhood('CENTER', LOCATIONS.CENTER,
@@ -228,6 +261,7 @@ class City:
             nbh.update_summary_stats()
 
     def do_turn(self, actions):
+        self.turn_deployments = []
         for action in actions:
             add = action[0]  # Unpack for readability
             loc = action[1]
@@ -266,8 +300,11 @@ class City:
 
     def _add_building_to_location(self, nbh_index, dep):
         # Update the list of deployments at that location
+        # recordkeeping
         if dep != DEPLOYMENTS.NONE:
             self.neighborhoods[nbh_index].add_deployment(dep)
+        self.all_deployments.append(dep)
+        self.turn_deployments.append(dep)
 
     def _remove_building_from_location(self, nbh_index, dep):
         self.neighborhoods[nbh_index].remove_deployment(dep)
@@ -475,8 +512,8 @@ class City:
 
     def _art_trans_firebomb_barrage(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
-        dead_dead_prob = 0.5
-        death_prob = 0.1
+        dead_dead_prob = 0.7
+        death_prob = 0.5
         vaporize_prob = 0.9
         for npc in nbh.NPCs:
             if npc.state_dead is NPC_STATES_DEAD.DEAD:
@@ -943,6 +980,7 @@ class City:
     def check_done(self):
         return self.turn >= self.max_turns
 
+#TODO fix scaling
     def get_score(self):
         self.update_summary_stats()
         weights = self.SCORE_WEIGHTS
@@ -960,8 +998,11 @@ class City:
                 (self.resources * resource_weight) + \
                 (self.num_dead * dead_weight) + \
                 (self.num_ashen * ashen_weight)
-        scaled_score = np.floor((score + 800) / 100)  # scaled to fit env state space range
-        return scaled_score
+
+        # scaled_score = np.floor((score + 800) / 100)  # scaled to fit env state space range
+        # return scaled_score
+        return np.floor(score)
+        # return np.floor(np.log(score+1000))
 
     def get_data(self):
         self.update_summary_stats()
@@ -1030,7 +1071,7 @@ class City:
         state[0, 2] = int(self.turn)  # Turn number
         state[0, 3] = int(self.orig_alive)  # Original number alive
         state[0, 4] = int(self.orig_dead)  # Original number dead
-        state[0, 5] = int(self.score)  # Score on a given turn (trying to maximize)
+        state[0, 5] = int(self.total_score)  # Score on a given turn (trying to maximize)
 
         # Set the state information for the different neighborhoods
         # Don't need to worry about order here as neighborhoods are stored in a list

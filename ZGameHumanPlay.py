@@ -11,14 +11,21 @@ from gym_zgame.envs.model.City import City
 
 class ZGame:
 
-    def __init__(self, data_log_file='data_log.json'):
+    def __init__(self, data_log_file='data_log.json', play_config='play_config.json'):
         self.ENV_NAME = 'ZGame-v0'
         self.DATA_LOG_FILE_NAME = data_log_file
+        self.CONFIG_FILENAME = play_config
+        self.config = {}
+        with open(self.CONFIG_FILENAME) as file:
+            data = json.load(file)
+            self.config.update(data)
+
         self.GAME_ID = uuid.uuid4()
         self.env = None
         self.current_actions = []
         self.turn = 0
-        self.max_turns = 14
+        self.max_turns = self.config["max_turns"]
+
         # Always do these actions upon start
         self._setup()
 
@@ -118,7 +125,10 @@ class ZGame:
                     print('>>> Out of resources. Wasted deployment(s): ' + canceled_dep)
 
             observation, reward, done, info = self.env.step(actions)
+
             print(info)
+
+
             self.env.render(mode='human')
 
             # Write action and stuff out to disk.
@@ -131,6 +141,9 @@ class ZGame:
                 'game_info': {k.replace('.', '_'): v for (k, v) in info.items()},
                 'raw_state': observation
             }
+            # data_to_analysis = {
+            #     'score':
+            # }
             with open(self.DATA_LOG_FILE_NAME, 'a') as f_:
                 f_.write(json.dumps(data_to_log) + '\n')
 
