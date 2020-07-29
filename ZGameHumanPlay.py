@@ -4,6 +4,8 @@ import gym
 import gym_zgame
 from gym_zgame.envs.enums.PLAY_TYPE import PLAY_TYPE
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
+from GUI import *
+from GUI_2 import *
 from gym_zgame.envs.model.City import City
 
 
@@ -44,6 +46,15 @@ class ZGame:
     def _cleanup(self):
         self.env.close()
 
+    def run_gui(self):
+        root = Tk()
+        root.title("ZGAME")
+        #root.geometry("270x250")
+        #root.resizable(width=False,height=False)
+        app = GUI(self, root)
+        root.mainloop()
+        print("HELLO WORLD")
+
     def run(self):
         print('Starting new game with human play!')
         self.env.reset()
@@ -69,7 +80,7 @@ class ZGame:
                 print('>>> Input error. Try again.')
                 i -= 1
                 continue
-            if add_1 == 'r' and (int(deployment_2) not in self.env.city.neighborhoods[int(location_2)].current_deployments or int(deployment_2) == 0):
+            if add_1 == 'r' and (int(deployment_1) not in self.env.city.neighborhoods[int(location_1)].current_deployments or int(deployment_1) == 0):
                 print('>>> Invalid deployment is removed. Try again.')
                 i -= 1
                 continue

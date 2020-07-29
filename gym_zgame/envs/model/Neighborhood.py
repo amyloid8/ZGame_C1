@@ -2,12 +2,14 @@ import random
 from gym_zgame.envs.enums.PLAYER_ACTIONS import LOCATIONS, DEPLOYMENTS
 from gym_zgame.envs.enums.NPC_STATES import NPC_STATES_DEAD, NPC_STATES_ZOMBIE, NPC_STATES_FLU
 from gym_zgame.envs.model.NPC import NPC
+import json
 
 
 class Neighborhood:
 
-    def __init__(self, id, location, adj_locations, num_init_npcs, city):
+    def __init__(self, id, location, adj_locations, num_init_npcs, city, config_file = 'city_config.json'):
 
+        self.FILENAME = config_file
         self.city = city
         self.id = id
         self.location = location
@@ -31,6 +33,11 @@ class Neighborhood:
         self.income = 0
         self.sanitation = 0
         self.adj_locations = adj_locations
+        self.SPAWN_CHANCES = {}
+        self.INCOME_THRSHLD = {}
+        self.TRANS_PROBS = {}
+        self.SANITATION_CONST = 1
+        self._init_config(self.FILENAME)
         self._npc_init(num_init_npcs)
         self.archive_deployments = []
         # Transition probabilities
@@ -41,6 +48,13 @@ class Neighborhood:
         self.orig_alive, self.orig_dead = self._get_original_state_metrics()
 
         self.current_deployments = []
+
+    def _init_config(self, filename):
+        with open(filename) as file:
+            data = json.load(file)
+        self.SPAWN_CHANCES.update(data["spawn_chances"])
+        self.TRANS_PROBS.update(data["trans_probs"])
+        self.SANITATION_CONST = self.TRANS_PROBS['sanitation_const']
 
     def get_num_npcs(self):
         return len(self.NPCs)
@@ -55,14 +69,14 @@ class Neighborhood:
             zombie_chance = random.uniform(0, 1)
             flu_chance = random.uniform(0, 1)
             if npc.income > 200000:
-                zombie_chance *= .5
-                flu_chance *= .5
+                zombie_chance /= self.SPAWN_CHANCES["income_multiplier"]
+                flu_chance /= self.SPAWN_CHANCES["income_multiplier"]
             elif npc.income < 100000:
-                zombie_chance *= 1.5
-                flu_chance *= 1.5
-            if zombie_chance >= 0.9:
+                zombie_chance *= self.SPAWN_CHANCES["income_multiplier"]
+                flu_chance *= self.SPAWN_CHANCES["income_multiplier"]
+            if zombie_chance >= self.SPAWN_CHANCES["zombie"]:
                 npc.state_zombie = NPC_STATES_ZOMBIE.ZOMBIE
-            if flu_chance >= 0.9:
+            if flu_chance >= self.SPAWN_CHANCES["flu"]:
                 npc.state_flu = NPC_STATES_FLU.FLU
             init_npcs.append(npc)
         self.add_NPCs(init_npcs)
@@ -77,19 +91,19 @@ class Neighborhood:
     def compute_baseline_trans_probs(self):
         self.update_summary_stats()
         trans_probs = {
-            'burial': (self.num_active / self.num_dead) * 0.1 if self.num_dead > 0 else 0,  # dead -> ashen
-            'recover': 0.25,  # flu -> flu immune
-            'pneumonia': 0.01,  # flu -> dead
-            'incubate': 0.25,  # incubating -> flu
-            'fumes': self.num_dead * 0.01,  # healthy -> incubating
+            'burial': (self.num_active / self.num_dead) * self.TRANS_PROBS["burial"] if self.num_dead > 0 else 0,  # dead -> ashen
+            'recover': self.TRANS_PROBS["burial"],  # flu -> flu immune
+            'pneumonia': self.TRANS_PROBS["burial"],  # flu -> dead
+            'incubate': self.TRANS_PROBS["burial"],  # incubating -> flu
+            'fumes': self.num_dead * self.TRANS_PROBS["burial"],  # healthy -> incubating
             'cough': self.num_flu / self.num_moving if self.num_moving > 0 else 0,  # healthy -> incubating
-            'mutate': 0.01,  # immune -> healthy
-            'turn': 0.2,  # zombie bitten -> zombie
-            'devour': (self.num_zombie / self.num_moving) * 0.5 if self.num_moving > 0 else 0,  # human -> dead
-            'bite': (self.num_zombie / self.num_moving) * 0.5 if self.num_moving > 0 else 0,  # human -> zombie bitten
-            'fight_back': self.num_active * 0.01,  # zombie -> dead
-            'collapse': 0.1,  # zombie -> dead
-            'rise': 0.1  # dead -> zombie
+            'mutate': self.TRANS_PROBS["burial"],  # immune -> healthy
+            'turn': self.TRANS_PROBS["burial"],  # zombie bitten -> zombie
+            'devour': (self.num_zombie / self.num_moving) * self.TRANS_PROBS["burial"] if self.num_moving > 0 else 0,  # human -> dead
+            'bite': (self.num_zombie / self.num_moving) * (1 - self.TRANS_PROBS["burial"]) if self.num_moving > 0 else 0,  # human -> zombie bitten
+            'fight_back': self.num_active * self.TRANS_PROBS["burial"],  # zombie -> dead
+            'collapse': self.TRANS_PROBS["burial"],  # zombie -> dead
+            'rise': self.TRANS_PROBS["burial"]  # dead -> zombie
         }
         trans_probs['fumes'] = min(trans_probs['fumes']/self.sanitation, 1) if self.sanitation > 1 else 0
         trans_probs['cough'] = min(trans_probs['cough']/self.sanitation, 1) if self.sanitation > 1 else 0
@@ -220,17 +234,17 @@ class Neighborhood:
     def update_income(self):
         total_income = 0
         for npc in self.NPCs:
-            if npc.moving:
+            if npc.active:
                 total_income += npc.income
 
         self.income = total_income/(100000*self.num_active) if self.num_active > 0 else 0
 
     def update_sanitation(self):
         income = self.income
-        self.sanitation = (income / self.current_density) if self.current_density > 0 else 0
+        self.sanitation = self.SANITATION_CONST * (income / self.current_density) if self.current_density > 0 else 0
 
     def update_density(self):
-        self.current_density = (self.num_active / (9 * self.city.get_num_npcs())) * self.baseDensity if self.city.get_num_npcs() > 0 else self.baseDensity
+        self.current_density = (9 * self.num_alive / self.city.get_num_npcs()) * self.baseDensity if self.city.get_num_alive() > 0 else self.baseDensity
 
     def get_data(self):
         self.update_summary_stats()
@@ -253,7 +267,6 @@ class Neighborhood:
                              'original_alive': self.orig_alive,
                              'original_dead': self.orig_dead,
                              'deployments': self.current_deployments,
-                             'density': self.current_density,
                              'density': self.current_density,
                              'income': self.income,
                              'sanitation': self.sanitation}
