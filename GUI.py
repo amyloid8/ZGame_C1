@@ -189,7 +189,6 @@ class GUI(Frame):
             self.list_dead.append(dead)
             self.list_sickly.append(sickly)
             self.list_zombie.append(zombie)
-        print(self.xlist)
 
         # printing information for NW
         self.oneblock(frame, nbh_nw, 1, 0, (10, 5), (10, 5), '#00cccc')
@@ -244,9 +243,8 @@ class GUI(Frame):
         fig = Figure(figsize=(4, 4), dpi=35)
         fig.patch.set_facecolor(color)
         subplot = fig.add_subplot(111)
-        labels2 = 'a', 'b', 'c', 'd'
-        pieSizes = [nbh.num_active, nbh.num_sickly, nbh.num_zombie, nbh.num_dead]
-        subplot.pie(pieSizes, labels=labels2, shadow=True, startangle=90)
+        pieSizes = [nbh.num_dead, nbh.num_sickly, nbh.num_active, nbh.num_zombie]
+        subplot.pie(pieSizes, shadow=True, startangle=90)
         subplot.axis('equal')
         pie2 = FigureCanvasTkAgg(fig, frame)
         pie2.get_tk_widget().grid(row=row_index, column=col_index, sticky=N + E + S + W, padx=padx_value,
@@ -326,14 +324,13 @@ class GUI(Frame):
 
     # check if all inputs are set before updating the GUI and Zgame Env
     def check_update(self):
-        print(self.ar1)
-        print(self.ar2)
 
         try:
             location_1 = int(self.loc1.get())
             deployment_1 = int(self.dep1.get())
             location_2 = int(self.loc2.get())
             deployment_2 = int(self.dep2.get())
+
         except:
             self.next['text'] = "Invalid Input"
             self.next['fg'] = "red"
@@ -352,6 +349,14 @@ class GUI(Frame):
                 self.next['fg'] = "red"
             elif (self.ar1 == -1 or self.ar2 == -1):
                 self.next['text'] = "Select Add or remove"
+                self.next['fg'] = "red"
+            elif self.ar1 == 1 and (deployment_1 not in self.env.city.neighborhoods[location_1].current_deployments
+                                    or deployment_1 == 0):
+                self.next['text'] = "Invalid input for removal"
+                self.next['fg'] = "red"
+            elif self.ar2 == 1 and (deployment_2 not in self.env.city.neighborhoods[location_2].current_deployments
+                                    or deployment_2 == 0):
+                self.next['text'] = "Invalid input for removal"
                 self.next['fg'] = "red"
             else:
                 self.update()
@@ -374,7 +379,6 @@ class GUI(Frame):
                                              deployment_2=DEPLOYMENTS(deployment_2))
         observation, reward, done, info = self.env.step(actions)
 
-        print(info)
         self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
 
         # Write action and stuff out to disk.
