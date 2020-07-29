@@ -1,6 +1,6 @@
 {
-  "mode": "play",
-  "who": "human",
+  "mode": "train",
+  "who": "machine",
   "demo": 1,
   "num_steps": 1000,
   "num_envs": 1,

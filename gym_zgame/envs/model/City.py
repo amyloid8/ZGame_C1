@@ -989,7 +989,7 @@ class City:
 
         # scaled_score = np.floor((score + 800) / 100)  # scaled to fit env state space range
         # return scaled_score
-        return score
+        return np.floor(score)
         # return np.floor(np.log(score+1000))
 
     def get_data(self):
