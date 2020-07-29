@@ -27,6 +27,9 @@ class DataAnalyzer:
         self.reward = 0
         self.actions_count = {}
 
+        self.num_entries = len(self.all_data)
+        print(self.num_entries)
+
         self.alive = self.all_data['alive']
         self.dead = self.all_data['dead']
         self.ashen = self.all_data['ashen']
@@ -44,8 +47,8 @@ class DataAnalyzer:
     def graph_population(self):
         df = self.all_data
         # length = (self.steps * self.envs)//self.interval
-        length = 2816
-        print(self.all_data)
+        length = self.num_entries
+        # print(self.all_data)
         game_num = list(range(1,length+1))
         fig, axs = plt.subplots(3, sharex=True, sharey=True)
         fig.suptitle('NPC Trends')
@@ -67,7 +70,7 @@ class DataAnalyzer:
         plt.show()
 
     def graph_dep_usage(self):
-        print(self.actions_count)
+        # print(self.actions_count)
         self.actions_count = self.get_dep_counts()
         actions_data = pd.DataFrame(self.actions_count, index=['# of uses'])
         actions_data = pd.DataFrame.sort_index(actions_data, 1)
@@ -88,33 +91,34 @@ class DataAnalyzer:
         plt.tight_layout()
         plt.show()
         return
-
+# CAN USE ON PLAY AND TRAIN MODES DATA
     def get_dep_counts(self):
         actions = self.dep_record
-        print('hi')
-        print(actions)
+        # print('hi')
+        # print(actions)
         actions_count = {}
         i = 0
         for i in range(len(DEPLOYMENTS)):
             actions_count.update({i: 0})
         for dep_list in actions:
-            print(dep_list)
+            # print(dep_list)
             for dep in dep_list:
                 if dep in actions_count.keys():
                     actions_count[dep] += 1
         return actions_count
 
-    def scatter_hist(self, x, y, y2, axs, ax_histy):
+    def scatter_hist(self, x, y, axs, ax_histy):
 
         ax_histy.tick_params(axis="y", labelleft=True)
         ax_histy.grid(b=True, which='major', color='#999999', linestyle='-')
         ax_histy.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
 
         # the scatter plot:
-        axs.scatter(x, y)
-        axs.scatter(x, y2)
+        for i in range(len(y)):
+            for j in range(len(y[i])):
+                axs.scatter(x[i], y[i][j])
 
-        axs.set_xlim(0, 42)
+        axs.set_xlim(0, self.num_entries)
         axs.set_ylim(0, 30)
 
         axs.grid(b=True, which='major', color='#999999', linestyle='-')
@@ -123,30 +127,43 @@ class DataAnalyzer:
 
         # now determine nice limits by hand:
         binwidth = 0.25
-        xymax = max(np.max(np.abs(x)), np.max(np.abs(y)))
+        xymax = max(np.max(np.abs(x)), 30)
+        # xymax = max(np.max(np.abs(x)), np.max(np.abs(y)))
         lim = (int(xymax / binwidth) + 1) * binwidth
 
         bins = np.arange(0, lim + binwidth, binwidth)
-        ax_histy.hist(y+y2, bins=bins, orientation='horizontal')
-        print(y+y2)
+        y_all = []
+        for i in range(len(y)):
+            for j in range(len(y[i])):
+                y_all.append(y[i][j])
+        temp = y[0]
+        ax_histy.hist(y_all, bins=bins, orientation='horizontal')
+        # print(y+y2)
         plt.show()
 
+
+    # ONLY USE FOR PLAY MODE DATA
     def get_actions_trend(self):
 
         steps = list(range(len(self.dep_record)))
         actions = self.dep_record
-        print(actions)
-        print(self.get_dep_counts())
+        # print(actions)
+        # print(self.get_dep_counts())
         x_vals = steps
         # print(x_vals)
-        y_vals_1 = []
-        y_vals_2 = []
+        y_sets = []
+        y_vals = []
+        y_temp = []
 
         for dep_list in actions.values:
-            if len(dep_list) == 1:
-                dep_list.append(0)
-            y_vals_1.append(dep_list[0])
-            y_vals_2.append(dep_list[1])
+            # if len(dep_list) == 1:
+            #     dep_list.append(0)
+            i=0
+            vals = []
+            for dep in dep_list:
+                vals.append(dep)
+                i+=1
+            y_vals.append(vals)
 
         # start with a square Figure
         fig = plt.figure(figsize=(8, 8))
@@ -167,14 +184,14 @@ class DataAnalyzer:
         axs.set_ylabel('Deployment Number')
 
         # use the previously defined function
-        self.scatter_hist(x_vals, y_vals_1, y_vals_2, axs, ax_histy)
+        self.scatter_hist(x_vals, y_vals, axs, ax_histy)
 
 
 
 if __name__ == '__main__':
-    analyzer = DataAnalyzer('train_info.json', 'play_config.json')
+    analyzer = DataAnalyzer('machine_log.json', 'play_config.json')
 
-    analyzer.graph_population()
-    analyzer.get_dep_counts()
+    # analyzer.graph_population()
+    # analyzer.get_dep_counts()
     analyzer.graph_dep_usage()
     analyzer.get_actions_trend()

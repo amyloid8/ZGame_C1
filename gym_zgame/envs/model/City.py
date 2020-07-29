@@ -505,8 +505,8 @@ class City:
 
     def _art_trans_firebomb_barrage(self, nbh_index):
         nbh = self.neighborhoods[nbh_index]
-        dead_dead_prob = 0.5
-        death_prob = 0.1
+        dead_dead_prob = 0.7
+        death_prob = 0.5
         vaporize_prob = 0.9
         for npc in nbh.NPCs:
             if npc.state_dead is NPC_STATES_DEAD.DEAD:
@@ -968,6 +968,7 @@ class City:
     def check_done(self):
         return self.turn >= self.max_turns
 
+#TODO fix scaling
     def get_score(self):
         self.update_summary_stats()
         weights = self.SCORE_WEIGHTS
@@ -979,14 +980,17 @@ class City:
         ashen_weight = weights["ashen_weight"]
         resource_weight = weights["resource_weight"]
         score = (self.num_active * active_weight) + \
-                (self.num_sickly * sickly_weight) - \
-                (self.fear * fear_weight) - \
+                (self.num_sickly * sickly_weight) + \
+                (self.fear * fear_weight) + \
                 (self.num_zombie * zombie_weight) + \
-                (self.resources * resource_weight) - \
-                (self.num_dead * dead_weight) - \
+                (self.resources * resource_weight) + \
+                (self.num_dead * dead_weight) + \
                 (self.num_ashen * ashen_weight)
-        scaled_score = np.floor((score + 800) / 100)  # scaled to fit env state space range
-        return scaled_score
+
+        # scaled_score = np.floor((score + 800) / 100)  # scaled to fit env state space range
+        # return scaled_score
+        return score
+        # return np.floor(np.log(score+1000))
 
     def get_data(self):
         self.update_summary_stats()
@@ -1055,7 +1059,7 @@ class City:
         state[0, 2] = int(self.turn)  # Turn number
         state[0, 3] = int(self.orig_alive)  # Original number alive
         state[0, 4] = int(self.orig_dead)  # Original number dead
-        state[0, 5] = int(self.score)  # Score on a given turn (trying to maximize)
+        state[0, 5] = int(self.total_score)  # Score on a given turn (trying to maximize)
 
         # Set the state information for the different neighborhoods
         # Don't need to worry about order here as neighborhoods are stored in a list
