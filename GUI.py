@@ -10,7 +10,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
+from PIL import ImageTk, Image
 
 class GUI(Frame):
 
@@ -29,9 +29,13 @@ class GUI(Frame):
         self.list_dead = []
         self.list_zombie = []
         self.xlist = []
+        self.graphed = False
+        self.legend = False
+        self.appended = False
+        self.ar1 = -1
+        self.ar2 = -1
         self.create_widgets()
-        self.ar1=0
-        self.ar2=0
+
 
     def set1A(self):
         self.ar1 = 0
@@ -46,8 +50,12 @@ class GUI(Frame):
         self.ar2 = 1
 
     def create_widgets(self):
+        self.graphed = False
+        self.legend = False
+        self.appended = False
+
         # cmd line UI
-        print(self.env.render(mode='human'))
+        # print(self.env.render(mode='human'))
 
         # left frame (titles and tables)
         left = Frame(self)
@@ -59,14 +67,24 @@ class GUI(Frame):
         tables = Frame(left, bg="blue", width=21)
         tables.grid(row=1, column=0)
 
+        graphs = Frame(left, bg="green")
+        graphs.grid(row=2, column=0)
+
         # print title "ZGAME"
-        Label(title, text="ZGAME", font='Chalkduster 35', justify=LEFT, width=21).grid(row=0, column=0, padx=(6, 7),
+        Label(title, text="ZGAME", font='Chalkduster 35', justify=LEFT, width=22).grid(row=0, column=0, padx=(6, 7),
                                                                                        pady=(6, 7))
 
         # print 3 by 3 tables of neighborhoods
         self.grid3by3(tables)
 
-        right = Frame(self, bg='#86b8b0', padx=10, pady=44)
+        # print 3 buttons for graphs and informations
+        Button(graphs, text = "Show graph", command = lambda : self.check_graph(left, tables, graphs), width=27, height = 2, highlightbackground="green")\
+            .grid(row = 0, column = 0, columnspan = 2, padx = (5,2), pady = 4)
+
+        Button(graphs, text = "Show legend", command = lambda : self.check_legend(left, tables, graphs), width=27, height = 2, highlightbackground="green")\
+            .grid(row = 0, column = 2, columnspan = 2, padx = (2,4), pady = 4)
+
+        right = Frame(self, bg='#86b8b0',padx=10,pady=37)
         right.grid(row=0, column=1)
         # GLOBAL INFO
         str = ' Turn: {0} of {1}'.format(self.turn, self.max_turns) \
@@ -116,15 +134,16 @@ class GUI(Frame):
         self.dep2 = Entry(right, bg='#5e817b')
         self.dep2.grid(row=20, column=4, columnspan=2, rowspan=2, padx=10, pady=10)
 
-        Button(right, text="Next step", command=self.update, height=2, width=45, bg='#b8ac86').grid(row=24, column=1,
-                                                                                                    columnspan=8,
-                                                                                                    rowspan=2, padx=10,
-                                                                                                    pady=10)
+        self.next = Button(right, text="Next step", command=self.check_update, height=2, width=45, bg='#b8ac86')
+        self.next.grid(row=24, column=1, columnspan=8, rowspan=2, padx=10, pady=10)
+
         Button(right, text="Quit", command=self.quit, height=2, width=25, bg='#b8ac86').grid(row=0, column=3,
                                                                                              columnspan=2, rowspan=1,
                                                                                              padx=10, pady=10)
         v = IntVar()
         x = IntVar()
+        self.ar1 = -1
+        self.ar2 = -1
         Radiobutton(right, bg='#5e817b', variable=v, value=1, text="Add", padx=20, command=self.set1A,
                     indicatoron=0, width=5).grid(column=1, row=14, rowspan=2, padx=10, pady=10, ipadx=5, ipady=5)
         Radiobutton(right, bg='#5e817b', variable=v, value=2, text="Remove", padx=20, command=self.set1R,
@@ -164,12 +183,12 @@ class GUI(Frame):
             dead += nbh.num_dead
             sickly += nbh.num_sickly
             zombie += nbh.num_zombie
-
-        self.xlist.append(self.turn)
-        self.list_active.append(active)
-        self.list_dead.append(dead)
-        self.list_sickly.append(sickly)
-        self.list_zombie.append(zombie)
+        if (not self.appended):
+            self.xlist.append(self.turn)
+            self.list_active.append(active)
+            self.list_dead.append(dead)
+            self.list_sickly.append(sickly)
+            self.list_zombie.append(zombie)
 
         # printing information for NW
         self.oneblock(frame, nbh_nw, 1, 0, (10, 5), (10, 5), '#00cccc')
@@ -198,19 +217,21 @@ class GUI(Frame):
         # printing information for SE
         self.oneblock(frame, nbh_se, 3, 2, (5, 10), (5, 10), "#00cccc")
 
-        # self.graph(frame)
+        self.appended = True
 
     # prints info for one block and button that leads to drawing pie chart
     def oneblock(self, frame, nbh, row_index, col_index, padx_value, pady_value, color):
         Label(frame,
-              text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} \nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6}" \
+              text="Active: {0} \nSickly: {1} \nZombies: {2} \nDead: {3} "
+                   "\nLiving at Start: {4} \nDead at Start: {5} \nDeployments: {6} \nSanitation: {7}" \
               .format(self.env.city.mask_visible_data(nbh, nbh.num_active).name,
                       self.env.city.mask_visible_data(nbh, nbh.num_sickly).name,
                       self.env.city.mask_visible_data(nbh, nbh.num_zombie).name,
                       self.env.city.mask_visible_data(nbh, nbh.num_dead).name,
                       nbh.orig_alive,
                       nbh.orig_dead,
-                      nbh.get_current_deps()), justify=LEFT, width=19, height=10, bg=color
+                      nbh.get_current_deps(),
+                      int(nbh.sanitation)), justify=LEFT, width=19, height=10, bg=color
               ).grid(row=row_index, column=col_index, sticky=N + E + W + S, padx=padx_value, pady=pady_value)
 
         Button(frame, command=lambda: self.pieButtons(frame, nbh, row_index, col_index, padx_value, pady_value, color),
@@ -222,9 +243,8 @@ class GUI(Frame):
         fig = Figure(figsize=(4, 4), dpi=35)
         fig.patch.set_facecolor(color)
         subplot = fig.add_subplot(111)
-        labels2 = 'a', 'b', 'c', 'd'
-        pieSizes = [nbh.num_active, nbh.num_sickly, nbh.num_zombie, nbh.num_dead]
-        subplot.pie(pieSizes, labels=labels2, shadow=True, startangle=90)
+        pieSizes = [nbh.num_dead, nbh.num_sickly, nbh.num_active, nbh.num_zombie]
+        subplot.pie(pieSizes, shadow=True, startangle=90)
         subplot.axis('equal')
         pie2 = FigureCanvasTkAgg(fig, frame)
         pie2.get_tk_widget().grid(row=row_index, column=col_index, sticky=N + E + S + W, padx=padx_value,
@@ -234,28 +254,115 @@ class GUI(Frame):
                text="X", highlightbackground=color
                ).grid(row=row_index, column=col_index, sticky=E + N, padx=padx_value, pady=pady_value)
 
+    def check_graph(self, left, tables, graphs):
+        if (self.graphed):
+            Label(tables, bg="blue", width=21, height=21).grid(row=1, column=0, rowspan=3, columnspan=3, sticky=N + E + W + S)
+            self.grid3by3(tables)
+            Button(graphs, text="Show graph", command=lambda: self.check_graph(left, tables, graphs), width=27, height=2,
+                   highlightbackground="green") \
+                .grid(row=0, column=0, columnspan=2, padx=(5, 2), pady=4)
+            self.graphed = False
+        else:
+            self.graph(tables)
+            Button(graphs, text="Exit graph", command=lambda: self.check_graph(left, tables, graphs), width=27, height=2,
+                   highlightbackground="green" , fg="red") \
+                .grid(row=0, column=0, columnspan=2, padx=(5, 2), pady=4)
+            Button(graphs, text="Show legend", command=lambda: self.check_legend(left, tables, graphs), width=27,
+                   height=2, highlightbackground="green") \
+                .grid(row=0, column=2, columnspan=2, padx=(2, 4), pady=4)
+            self.legend = False
+            self.graphed = True
+
     def graph(self, frame):
         fig = Figure(figsize=(4, 4), dpi=35)
-        # fig.patch.set_facecolor("#00cccc")
-        # subplot = fig.add_subplot(111)
-        # y = [5,1,3,2,6,8]
-        # subplot.plot([1,2,3,4,5,6],y)
-        # subplot.plot([1,2,3,4,5,6],[12,10,9,3,5,6], "ro-")
-        # subplot.get_yaxis().set_visible(False)
 
         subplot = fig.add_subplot(111)
-        subplot.plot(self.xlist, self.list_active, "go-")
-        subplot.plot(self.xlist, self.list_sickly, "yo-")
-        subplot.plot(self.xlist, self.list_dead, "ro-")
-        subplot.plot(self.xlist, self.list_zombie, "bo-")
+        subplot.plot(self.xlist,self.list_active, "go-")
+        subplot.plot(self.xlist,self.list_sickly, "o-", color='#f7941b')
+        subplot.plot(self.xlist,self.list_dead, "ro-")
+        subplot.plot(self.xlist,self.list_zombie, "bo-")
         subplot.get_yaxis().set_visible(False)
 
         graph = FigureCanvasTkAgg(fig, frame)
         graph.get_tk_widget().grid(row=1, column=0, rowspan=3, columnspan=3, sticky=N + E + W + S, padx=10, pady=10)
 
+    def check_legend(self, left, tables, graphs):
+        if (self.legend):
+            Label(tables, bg = "blue", width = 21, height = 21).grid(row = 1, column = 0, rowspan = 3, columnspan = 3, sticky = N+E+W+S)
+            self.grid3by3(tables)
+            Button(graphs, text="Show legend", command=lambda: self.check_legend(left, tables, graphs), width=27,
+                   height=2, highlightbackground="green") \
+                .grid(row=0, column=2, columnspan=2, padx=(2, 4), pady=4)
+            self.legend = False
+
+        else:
+            self.info_display(tables)
+            Button(graphs, text="Exit legend", command=lambda: self.check_legend(left, tables, graphs), width=27,
+                   height=2, highlightbackground="green" , fg="red") \
+                .grid(row=0, column=2, columnspan=2, padx=(2, 4), pady=4)
+            Button(graphs, text="Show graph", command=lambda: self.check_graph(left, tables, graphs), width=27,
+                   height=2,
+                   highlightbackground="green") \
+                .grid(row=0, column=0, columnspan=2, padx=(5, 2), pady=4)
+            self.graphed = False
+            self.legend = True
+
+
+
+    def info_display(self, frame):
+        im = Image.open("graph_legend.png")
+        im.thumbnail((600, 600))
+        ph = ImageTk.PhotoImage(im)
+
+        label = Label(frame, image = ph, width = 10, height = 10)
+        label.grid(row=1, column=0, rowspan=3, columnspan=3, sticky=N + E + W + S, padx=10, pady=10)
+        label.image = ph
+
     # function for quitting the gamme
     def quit(self):
         self.winfo_children()[0].quit()
+
+    # check if all inputs are set before updating the GUI and Zgame Env
+    def check_update(self):
+
+        try:
+            location_1 = int(self.loc1.get())
+            deployment_1 = int(self.dep1.get())
+            location_2 = int(self.loc2.get())
+            deployment_2 = int(self.dep2.get())
+
+        except:
+            self.next['text'] = "Invalid Input"
+            self.next['fg'] = "red"
+        else:
+            if (int(self.loc1.get()) > 8 or int(self.loc1.get()) < 0):
+                self.next['text'] = "Invalid Location 1 Input"
+                self.next['fg'] = "red"
+            elif (int(self.dep1.get()) > 29 or int(self.dep1.get()) < 0):
+                self.next['text'] = "Invalid Deployment 1 Input"
+                self.next['fg'] = "red"
+            elif (int(self.loc2.get()) > 8 or int(self.loc2.get()) < 0):
+                self.next['text'] = "Invalid Location 2 Input"
+                self.next['fg'] = "red"
+            elif (int(self.dep2.get()) > 29 or int(self.dep2.get()) < 0):
+                self.next['text'] = "Invalid Deployment 2 Input"
+                self.next['fg'] = "red"
+            elif (self.ar1 == -1 or self.ar2 == -1):
+                self.next['text'] = "Select Add or remove"
+                self.next['fg'] = "red"
+            elif self.ar1 == 1 and (deployment_1 not in self.env.city.neighborhoods[location_1].current_deployments
+                                    or deployment_1 == 0):
+                self.next['text'] = "Invalid input for removal"
+                self.next['fg'] = "red"
+            elif self.ar2 == 1 and (deployment_2 not in self.env.city.neighborhoods[location_2].current_deployments
+                                    or deployment_2 == 0):
+                self.next['text'] = "Invalid input for removal"
+                self.next['fg'] = "red"
+            else:
+                self.update()
+
+
+
 
     # update the GUI to next step
     def update(self):
@@ -272,7 +379,6 @@ class GUI(Frame):
                                              deployment_2=DEPLOYMENTS(deployment_2))
         observation, reward, done, info = self.env.step(actions)
 
-        print(info)
         self.neighborhoods, self.fear, self.resources, self.orig_alive, self.orig_dead, self.score, self.total_score = self.env.city.getNeiborhoods()
 
         # Write action and stuff out to disk.
