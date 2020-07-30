@@ -12,5 +12,5 @@ if __name__ == '__main__':
     model_filename = args.modelfilename
     training_steps = args.training_steps
     num_envs = args.num_envs
-    zgame_env = ZGame(model_filename=model_filename, num_steps=training_steps, num_envs=num_envs)
+    zgame_env = ZGame(model_filename=model_filename)
     zgame_env.run()

@@ -1,0 +1,10 @@
+{
+  "mode": "train",
+  "who": "machine",
+  "demo": 0,
+  "num_steps": 5000000,
+  "num_envs": 256,
+  "max_turns": 14,
+  "train_collection_interval": 14000,
+  "play_collection_interval": 1
+}
