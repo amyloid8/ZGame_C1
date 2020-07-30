@@ -92,18 +92,18 @@ class Neighborhood:
         self.update_summary_stats()
         trans_probs = {
             'burial': (self.num_active / self.num_dead) * self.TRANS_PROBS["burial"] if self.num_dead > 0 else 0,  # dead -> ashen
-            'recover': self.TRANS_PROBS["burial"],  # flu -> flu immune
-            'pneumonia': self.TRANS_PROBS["burial"],  # flu -> dead
-            'incubate': self.TRANS_PROBS["burial"],  # incubating -> flu
-            'fumes': self.num_dead * self.TRANS_PROBS["burial"],  # healthy -> incubating
+            'recover': self.TRANS_PROBS["recover"],  # flu -> flu immune
+            'pneumonia': self.TRANS_PROBS["pneumonia"],  # flu -> dead
+            'incubate': self.TRANS_PROBS["incubate"],  # incubating -> flu
+            'fumes': self.num_dead * self.TRANS_PROBS["fumes"],  # healthy -> incubating
             'cough': self.num_flu / self.num_moving if self.num_moving > 0 else 0,  # healthy -> incubating
-            'mutate': self.TRANS_PROBS["burial"],  # immune -> healthy
-            'turn': self.TRANS_PROBS["burial"],  # zombie bitten -> zombie
-            'devour': (self.num_zombie / self.num_moving) * self.TRANS_PROBS["burial"] if self.num_moving > 0 else 0,  # human -> dead
-            'bite': (self.num_zombie / self.num_moving) * (1 - self.TRANS_PROBS["burial"]) if self.num_moving > 0 else 0,  # human -> zombie bitten
-            'fight_back': self.num_active * self.TRANS_PROBS["burial"],  # zombie -> dead
-            'collapse': self.TRANS_PROBS["burial"],  # zombie -> dead
-            'rise': self.TRANS_PROBS["burial"]  # dead -> zombie
+            'mutate': self.TRANS_PROBS["mutate"],  # immune -> healthy
+            'turn': self.TRANS_PROBS["turn"],  # zombie bitten -> zombie
+            'devour': (self.num_zombie / self.num_moving) * self.TRANS_PROBS["devour"] if self.num_moving > 0 else 0,  # human -> dead
+            'bite': (self.num_zombie / self.num_moving) * (1 - self.TRANS_PROBS["bite"]) if self.num_moving > 0 else 0,  # human -> zombie bitten
+            'fight_back': self.num_active * self.TRANS_PROBS["fight_back"],  # zombie -> dead
+            'collapse': self.TRANS_PROBS["collapse"],  # zombie -> dead
+            'rise': self.TRANS_PROBS["rise"]  # dead -> zombie
         }
         trans_probs['fumes'] = min(trans_probs['fumes']/self.sanitation, 1) if self.sanitation > 1 else 0
         trans_probs['cough'] = min(trans_probs['cough']/self.sanitation, 1) if self.sanitation > 1 else 0
