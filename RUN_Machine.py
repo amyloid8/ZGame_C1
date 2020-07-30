@@ -3,7 +3,7 @@ import argparse
 from ZGameMachinePlay import ZGame
 
 parser = argparse.ArgumentParser(description='CLI Argument Parser for Machine Playback.')
-parser.add_argument('--model', help='Input file name for learned model.', default='rl-agent')
+parser.add_argument('--model', help='Input file name for learned model.', default='rl-agent_2.5ishM')
 parser.add_argument('--outfile', help='Data logging file name.', default='data_log.json')
 parser.add_argument('--creation', help='Allow creation of output file.', default=False, action='store_true')
 

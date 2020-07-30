@@ -116,10 +116,10 @@ class ZGame:
             # Update counter
             self.turn += 1
 
-            print('Continue? y/n')
-            is_continue = input()
-            if is_continue is not 'y':
-                done = True
+            # print('Continue? y/n')
+            # is_continue = input()
+            # if is_continue is not 'y':
+            #     done = True
 
             if done:
                 self.done()
